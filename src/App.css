@@ -1,41 +1,45 @@
-:root {
-  --bg: #0b1020;
-  --panel: #11182f;
-  --panel-soft: #0f1730;
-  --text: #eaf0ff;
-  --muted: #9aa7c7;
-  --border: rgba(255,255,255,0.08);
-  --blue: #2f6bff;
-  --blue-soft: rgba(47,107,255,0.2);
-  --radius: 16px;
+.navItem{
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
 }
-
-body {
-  margin: 0;
-  background: var(--bg);
+.navItem:hover{
   color: var(--text);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: rgba(255,255,255,0.06);
+}
+.navItem.active{
+  color: var(--text);
+  background: var(--blue-soft);
+  border-color: rgba(47,107,255,0.35);
 }
 
-.app-shell {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+.mobileNav{
+  position: sticky;
+  bottom: 0;
+  display: none;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(10,14,28,.9);
+  border-top: 1px solid rgba(255,255,255,.06);
 }
-
-.app-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+.mobileBtn{
+  flex:1;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  color: var(--muted);
+  padding: 10px;
+  border-radius: 14px;
+  cursor:pointer;
 }
-
-.card {
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,0.06),
-    rgba(255,255,255,0.02)
-  );
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
+.mobileBtn.active{
+  background: var(--blue-soft);
+  border-color: rgba(47,107,255,0.35);
+  color: var(--text);
+}
+@media (max-width: 900px){
+  .nav{ display:none; }
+  .mobileNav{ display:flex; }
 }
