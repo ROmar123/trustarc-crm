@@ -1,0 +1,1 @@
+export default function Subscriptions(){ return <div className="card">Subscriptions</div>; }

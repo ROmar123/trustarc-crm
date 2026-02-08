@@ -8,17 +8,18 @@ import RouteDetails from "./pages/RouteDetails.jsx";
 import Subscriptions from "./pages/Subscriptions.jsx";
 import Billing from "./pages/Billing.jsx";
 import InvoiceView from "./pages/InvoiceView.jsx";
+import "./index.css";
+import "./App.css";
 
 export default function App() {
   const [view, setView] = useState("overview");
   const [routeId, setRouteId] = useState(null);
   const [invoiceId, setInvoiceId] = useState(null);
-  const [customerId, setCustomerId] = useState(null);
 
   return (
     <AppShell view={view} setView={setView}>
       {view === "overview" && <Overview />}
-      {view === "customers" && <Customers setView={setView} setCustomerId={setCustomerId} />}
+      {view === "customers" && <Customers />}
       {view === "routes" && <Routes setView={setView} setRouteId={setRouteId} />}
       {view === "routeDetails" && <RouteDetails routeId={routeId} setView={setView} />}
       {view === "subscriptions" && <Subscriptions />}

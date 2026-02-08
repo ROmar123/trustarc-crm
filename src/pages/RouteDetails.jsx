@@ -1,0 +1,1 @@
+export default function RouteDetails(){ return <div className="card">Route Details</div>; }

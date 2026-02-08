@@ -1,0 +1,1 @@
+export default function Customers(){ return <div className="card">Customers</div>; }

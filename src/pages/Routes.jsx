@@ -1,0 +1,1 @@
+export default function Routes(){ return <div className="card">Routes</div>; }

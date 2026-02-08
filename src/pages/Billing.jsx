@@ -1,0 +1,1 @@
+export default function Billing(){ return <div className="card">Billing</div>; }

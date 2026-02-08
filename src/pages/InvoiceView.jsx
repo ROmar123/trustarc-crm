@@ -1,0 +1,1 @@
+export default function InvoiceView(){ return <div className="card">Invoice View</div>; }
