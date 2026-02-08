@@ -1,4 +1,6 @@
-export default function Table({ columns, rows, onRowClick }) {
+export default function Table({ columns = [], rows = [], onRowClick }) {
+  const hasData = Array.isArray(rows) && rows.length > 0;
+
   return (
     <div className="tableWrap">
       <table>
@@ -9,18 +11,25 @@ export default function Table({ columns, rows, onRowClick }) {
             ))}
           </tr>
         </thead>
+
         <tbody>
-          {rows.length === 0 ? (
+          {!hasData ? (
             <tr>
-              <td colSpan={columns.length} style={{ padding: 24, color: "var(--muted)" }}>
+              <td colSpan={columns.length} className="muted">
                 No data available
               </td>
             </tr>
           ) : (
-            rows.map((row, i) => (
-              <tr key={i} onClick={() => onRowClick?.(row)}>
+            rows.map((r, idx) => (
+              <tr
+                key={r.id || r.invoice_id || idx}
+                className={onRowClick ? "rowClickable" : ""}
+                onClick={() => onRowClick?.(r)}
+              >
                 {columns.map((c) => (
-                  <td key={c.key}>{row[c.key]}</td>
+                  <td key={c.key}>
+                    {typeof c.render === "function" ? c.render(r) : r?.[c.key] ?? "—"}
+                  </td>
                 ))}
               </tr>
             ))
