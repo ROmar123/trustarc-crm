@@ -64,13 +64,9 @@ function StatusBadge({ status }) {
   const tone = s === "active" ? "green" : "muted";
 
   const bg =
-    tone === "green"
-      ? "rgba(65, 230, 155, .14)"
-      : "rgba(255,255,255,.08)";
+    tone === "green" ? "rgba(65, 230, 155, .14)" : "rgba(255,255,255,.08)";
   const border =
-    tone === "green"
-      ? "rgba(65, 230, 155, .22)"
-      : "rgba(255,255,255,.10)";
+    tone === "green" ? "rgba(65, 230, 155, .22)" : "rgba(255,255,255,.10)";
 
   return (
     <span
@@ -93,7 +89,10 @@ function StatusBadge({ status }) {
           width: 8,
           height: 8,
           borderRadius: 999,
-          background: tone === "green" ? "rgba(65, 230, 155, 1)" : "rgba(255,255,255,.35)",
+          background:
+            tone === "green"
+              ? "rgba(65, 230, 155, 1)"
+              : "rgba(255,255,255,.35)",
         }}
       />
       {s ? s.toUpperCase() : "—"}
@@ -127,6 +126,8 @@ export default function Customers({ setView, setContext }) {
 
   const [rows, setRows] = useState([]);
   const [kpis, setKpis] = useState({ total: 0, active: 0, inactive: 0 });
+
+  const [busyId, setBusyId] = useState(null); // per-row action lock
 
   const [showCreate, setShowCreate] = useState(false);
   const [createForm, setCreateForm] = useState({
@@ -172,23 +173,14 @@ export default function Customers({ setView, setContext }) {
         });
       }
 
-      // KPI counts from filtered set? Usually better from full set:
-      // We’ll compute from full data for overall totals (not search-filtered).
-      const allRes = await supabase
-        .from("customers")
-        .select("customer_id, status")
-        .limit(5000);
+      const allRes = await supabase.from("customers").select("customer_id, status").limit(5000);
+      if (allRes.error) throw allRes.error;
 
       const all = allRes.data || [];
       const activeCount = all.filter((x) => String(x.status).toLowerCase() === "active").length;
       const inactiveCount = all.filter((x) => String(x.status).toLowerCase() === "inactive").length;
 
-      setKpis({
-        total: all.length,
-        active: activeCount,
-        inactive: inactiveCount,
-      });
-
+      setKpis({ total: all.length, active: activeCount, inactive: inactiveCount });
       setRows(mapped);
     } catch (e) {
       setToast(e?.message || "Couldn’t load customers.");
@@ -230,6 +222,46 @@ export default function Customers({ setView, setContext }) {
     });
 
     await load();
+  }
+
+  // ✅ NEW: toggle active/inactive
+  async function setCustomerStatus(customer_id, nextStatus) {
+    setToast("");
+    setBusyId(customer_id);
+
+    try {
+      // Optional safety rule: don’t allow inactivating if invoices exist (non-void)
+      if (nextStatus === "inactive") {
+        const invCheck = await supabase
+          .from("invoices")
+          .select("invoice_id")
+          .eq("customer_id", customer_id)
+          .neq("status", "void")
+          .limit(1);
+
+        if (invCheck.error) throw invCheck.error;
+        if ((invCheck.data || []).length > 0) {
+          throw new Error("Cannot set inactive: customer has invoices. Void/settle first (or remove this guard).");
+        }
+      }
+
+      const { error } = await supabase
+        .from("customers")
+        .update({ status: nextStatus })
+        .eq("customer_id", customer_id);
+
+      if (error) throw error;
+
+      // Optimistic update (faster UI), then refresh KPIs
+      setRows((prev) =>
+        prev.map((r) => (r.customer_id === customer_id ? { ...r, status: nextStatus } : r))
+      );
+      await load();
+    } catch (e) {
+      setToast(e?.message || "Couldn’t update status.");
+    } finally {
+      setBusyId(null);
+    }
   }
 
   useEffect(() => {
@@ -279,7 +311,6 @@ export default function Customers({ setView, setContext }) {
 
       {toast ? <div className="toast">{toast}</div> : null}
 
-      {/* KPI cards */}
       <div className="grid grid3">
         <div className="card cardGlow">
           <div className="kpiRow">
@@ -323,7 +354,7 @@ export default function Customers({ setView, setContext }) {
                 <th>Email</th>
                 <th style={{ width: 160 }}>Phone</th>
                 <th style={{ width: 160 }}>Status</th>
-                <th style={{ width: 170 }} />
+                <th style={{ width: 360 }} />
               </tr>
             </thead>
             <tbody>
@@ -337,36 +368,49 @@ export default function Customers({ setView, setContext }) {
                     String(r.phone || "").toLowerCase().includes(qq)
                   );
                 })
-                .map((r) => (
-                  <tr key={r.customer_id}>
-                    <td style={{ fontWeight: 900 }}>{r.display_name}</td>
-                    <td className="muted">{r.email}</td>
-                    <td className="muted">{r.phone || "—"}</td>
-                    <td>
-                      <StatusBadge status={r.status} />
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      <button
-                        className="btn btnPrimary"
-                        type="button"
-                        onClick={() => {
-                          setContext?.({ customer_id: r.customer_id });
-                          setView?.("customer_detail");
-                        }}
-                      >
-                        <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-                          <Icon kind="view" /> View
-                        </span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                .map((r) => {
+                  const isActive = String(r.status || "").toLowerCase() === "active";
+                  const nextStatus = isActive ? "inactive" : "active";
+                  const busy = busyId === r.customer_id;
+
+                  return (
+                    <tr key={r.customer_id}>
+                      <td style={{ fontWeight: 900 }}>{r.display_name}</td>
+                      <td className="muted">{r.email}</td>
+                      <td className="muted">{r.phone || "—"}</td>
+                      <td><StatusBadge status={r.status} /></td>
+
+                      <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                        <button
+                          className="btn btnGhost"
+                          type="button"
+                          onClick={() => setCustomerStatus(r.customer_id, nextStatus)}
+                          disabled={busy || loading}
+                          style={{ marginRight: 8 }}
+                        >
+                          {busy ? "Saving…" : isActive ? "Deactivate" : "Activate"}
+                        </button>
+
+                        <button
+                          className="btn btnPrimary"
+                          type="button"
+                          onClick={() => {
+                            setContext?.({ customer_id: r.customer_id });
+                            setView?.("customer_detail");
+                          }}
+                        >
+                          <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+                            <Icon kind="view" /> View
+                          </span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
 
               {!rows.length ? (
                 <tr>
-                  <td colSpan={5} className="muted">
-                    No customers found.
-                  </td>
+                  <td colSpan={5} className="muted">No customers found.</td>
                 </tr>
               ) : null}
             </tbody>
@@ -374,7 +418,6 @@ export default function Customers({ setView, setContext }) {
         </div>
       </Card>
 
-      {/* CREATE MODAL */}
       {showCreate ? (
         <Modal
           title="Add customer"

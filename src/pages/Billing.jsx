@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import Card from "../components/ui/Card.jsx";
 
-/** ✅ Match your real DB (from your SQL): public.invoice_lines */
+/** ✅ Match your real DB */
 const INVOICE_LINES_TABLE = "invoice_lines";
 
 function money(n) {
@@ -92,6 +92,15 @@ function Icon({ kind }) {
         <circle cx="12" cy="12" r="3" />
       </svg>
     );
+  if (kind === "cash")
+    return (
+      <svg {...common} viewBox="0 0 24 24">
+        <path d="M2 7h20v10H2z" />
+        <path d="M6 11h.01" />
+        <path d="M18 13h.01" />
+        <path d="M12 9a3 3 0 1 0 0 6a3 3 0 0 0 0-6z" />
+      </svg>
+    );
   return null;
 }
 
@@ -170,7 +179,7 @@ export default function Billing({ setView, setContext, context }) {
   const [from, setFrom] = useState(() => isoDate(startOfMonth(new Date())));
   const [to, setTo] = useState(() => isoDate(endOfMonth(new Date())));
 
-  const [status, setStatus] = useState("all"); // all | issued | paid | due | partially_paid | overdue
+  const [status, setStatus] = useState("all");
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState("");
@@ -184,7 +193,7 @@ export default function Billing({ setView, setContext, context }) {
   const [invoiceLines, setInvoiceLines] = useState([]);
   const [lineForm, setLineForm] = useState({ description: "", qty: 1, unit_price: 0 });
 
-  // ✅ New invoice modal + picker
+  // New invoice modal + picker
   const [showCreate, setShowCreate] = useState(false);
   const [customersPick, setCustomersPick] = useState([]);
 
@@ -194,7 +203,19 @@ export default function Billing({ setView, setContext, context }) {
     status: "issued",
     period_start: from,
     period_end: to,
-    notes: "",
+  });
+
+  // ✅ Last payment per invoice (for display on Billing list)
+  const [lastPayByInvoice, setLastPayByInvoice] = useState({});
+
+  // ✅ PAYMENT MODAL (aligned to your SQL schema)
+  const [showPayment, setShowPayment] = useState(false);
+  const [payInvoice, setPayInvoice] = useState(null);
+  const [payForm, setPayForm] = useState({
+    paid_on: isoDate(new Date()),
+    amount: "",
+    provider: "eft",
+    provider_reference: "",
   });
 
   function openCreateModal() {
@@ -204,9 +225,20 @@ export default function Billing({ setView, setContext, context }) {
       status: "issued",
       period_start: from,
       period_end: to,
-      notes: "",
     });
     setShowCreate(true);
+  }
+
+  function openPaymentModal(invRow) {
+    const outstanding = Number(invRow?.outstanding_amount || 0);
+    setPayInvoice(invRow);
+    setPayForm({
+      paid_on: isoDate(new Date()),
+      amount: outstanding > 0 ? String(outstanding.toFixed(2)) : "",
+      provider: "eft",
+      provider_reference: invRow?.invoice_display || "",
+    });
+    setShowPayment(true);
   }
 
   function statusTone(invoiceStatus, outstandingAmount) {
@@ -224,6 +256,15 @@ export default function Billing({ setView, setContext, context }) {
     const s = String(invoiceStatus || "").toUpperCase();
     const due = Number(outstandingAmount || 0) > 0.01;
     return due && s !== "PAID" ? `${s} • DUE` : s || "—";
+  }
+
+  function providerLabel(p) {
+    const x = String(p || "").toLowerCase();
+    if (x === "eft") return "EFT";
+    if (x === "cash") return "Cash";
+    if (x === "payfast") return "PayFast";
+    if (x === "other") return "Other";
+    return "—";
   }
 
   async function loadCustomersPicker() {
@@ -253,7 +294,6 @@ export default function Billing({ setView, setContext, context }) {
       status: createForm.status,
       period_start: createForm.period_start,
       period_end: createForm.period_end,
-      // ✅ invoices table does not have notes/currency in your SQL, so we don’t send them
     };
 
     const { data, error } = await supabase.from("invoices").insert(payload).select().single();
@@ -262,7 +302,6 @@ export default function Billing({ setView, setContext, context }) {
     setShowCreate(false);
     await load();
 
-    // ✅ open lines immediately
     setActiveInvoice({
       ...data,
       invoice_display: data.invoice_number || `#${String(data.invoice_id).slice(0, 8)}`,
@@ -300,7 +339,6 @@ export default function Billing({ setView, setContext, context }) {
     if (!lineForm.description?.trim()) return setToast("Line needs a description.");
     if (qty <= 0) return setToast("Qty must be > 0.");
 
-    // ✅ DB computes line_total via trigger, so we only send core fields
     const payload = {
       invoice_id: activeInvoice.invoice_id,
       description: lineForm.description.trim(),
@@ -314,7 +352,7 @@ export default function Billing({ setView, setContext, context }) {
     setLineForm({ description: "", qty: 1, unit_price: 0 });
 
     await loadInvoiceLines(activeInvoice.invoice_id);
-    await load(); // triggers update invoice total/status
+    await load();
   }
 
   async function deleteLine(invoice_line_id) {
@@ -327,12 +365,55 @@ export default function Billing({ setView, setContext, context }) {
     await load();
   }
 
+  async function savePayment() {
+    setToast("");
+
+    if (!payInvoice?.invoice_id) return setToast("No invoice selected.");
+    const outstanding = Number(payInvoice?.outstanding_amount || 0);
+    const amount = Number(payForm.amount || 0);
+
+    if (!Number.isFinite(amount) || amount <= 0) return setToast("Payment amount must be > 0.");
+    if (amount > outstanding + 0.01) return setToast(`Cannot pay more than outstanding (${money(outstanding)}).`);
+
+    setLoading(true);
+    try {
+      const paymentPayload = {
+        customer_id: payInvoice.customer_id,
+        provider: payForm.provider || "eft",
+        provider_reference: payForm.provider_reference?.trim() || null,
+        amount,
+        status: "succeeded",
+        paid_at: new Date(`${payForm.paid_on}T00:00:00Z`).toISOString(),
+      };
+
+      const payRes = await supabase.from("payments").insert(paymentPayload).select("payment_id").single();
+      if (payRes.error) throw payRes.error;
+
+      const payment_id = payRes.data?.payment_id;
+      if (!payment_id) throw new Error("Payment created but no payment_id returned.");
+
+      const allocRes = await supabase.from("payment_allocations").insert({
+        payment_id,
+        invoice_id: payInvoice.invoice_id,
+        allocated_amount: amount,
+      });
+      if (allocRes.error) throw allocRes.error;
+
+      setShowPayment(false);
+      setPayInvoice(null);
+      await load();
+    } catch (e) {
+      setToast(e?.message || "Payment failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function load() {
     setLoading(true);
     setToast("");
 
     try {
-      // ✅ invoices in range
       let invQuery = supabase
         .from("invoices")
         .select("invoice_id, invoice_number, customer_id, status, period_start, period_end, total_amount, created_at")
@@ -342,7 +423,6 @@ export default function Billing({ setView, setContext, context }) {
         .order("period_start", { ascending: false })
         .limit(800);
 
-      // db-friendly filters
       if (status === "paid") invQuery = invQuery.eq("status", "paid");
       if (status === "issued") invQuery = invQuery.eq("status", "issued");
       if (status === "partially_paid") invQuery = invQuery.eq("status", "partially_paid");
@@ -352,8 +432,9 @@ export default function Billing({ setView, setContext, context }) {
       if (invErr) throw invErr;
 
       const invoices = inv || [];
+      const invoiceIds = invoices.map((r) => r.invoice_id).filter(Boolean);
 
-      // ✅ customers lookup
+      // Customers
       const customerIds = [...new Set(invoices.map((r) => r.customer_id).filter(Boolean))];
       let customersById = {};
       if (customerIds.length) {
@@ -367,7 +448,7 @@ export default function Billing({ setView, setContext, context }) {
         customersById = Object.fromEntries((cust || []).map((c) => [c.customer_id, c]));
       }
 
-      // ✅ accounts_receivable view for balances (range matched)
+      // AR view
       const { data: ar, error: arErr } = await supabase
         .from("accounts_receivable")
         .select("invoice_id, balance_amount, paid_amount, total_amount, period_start")
@@ -379,7 +460,7 @@ export default function Billing({ setView, setContext, context }) {
       const arRows = ar || [];
       const arByInvoice = Object.fromEntries(arRows.map((r) => [r.invoice_id, r]));
 
-      // ✅ pending sends view (range matched)
+      // Pending sends
       const { data: pending, error: pendErr } = await supabase
         .from("invoices_to_email")
         .select("invoice_id, balance_amount, period_start")
@@ -389,28 +470,61 @@ export default function Billing({ setView, setContext, context }) {
 
       if (pendErr) throw pendErr;
 
-      const pendingTotal = (pending || []).reduce((a, r) => a + Number(r.balance_amount || 0), 0);
+      // ✅ Last payment per invoice
+      let lastMap = {};
+      if (invoiceIds.length) {
+        const { data: allocs, error: aErr } = await supabase
+          .from("payment_allocations")
+          .select(
+            `
+            invoice_id,
+            created_at,
+            allocated_amount,
+            payments:payment_id (
+              provider,
+              provider_reference,
+              paid_at,
+              amount,
+              status
+            )
+          `
+          )
+          .in("invoice_id", invoiceIds)
+          .order("created_at", { ascending: false })
+          .limit(5000);
 
-      // ✅ KPIs
-      const invoicedTotal = invoices.reduce((a, r) => a + Number(r.total_amount || 0), 0);
-      const dueTotal = arRows.reduce((a, r) => a + Number(r.balance_amount || 0), 0);
+        if (aErr) throw aErr;
 
-      // paid KPI: total - balance per invoice
-      const paidTotal = invoices.reduce((a, r) => {
+        for (const a of allocs || []) {
+          if (!a?.invoice_id) continue;
+          if (lastMap[a.invoice_id]) continue;
+
+          const p = a.payments || {};
+          lastMap[a.invoice_id] = {
+            provider: p.provider || null,
+            provider_reference: p.provider_reference || null,
+            paid_at: p.paid_at || null,
+            allocated_amount: a.allocated_amount || null,
+          };
+        }
+      }
+      setLastPayByInvoice(lastMap);
+
+      // KPIs
+      const pendingTotal = (pending || []).reduce((x, r) => x + Number(r.balance_amount || 0), 0);
+      const invoicedTotal = invoices.reduce((x, r) => x + Number(r.total_amount || 0), 0);
+      const dueTotal = arRows.reduce((x, r) => x + Number(r.balance_amount || 0), 0);
+
+      const paidTotal = invoices.reduce((x, r) => {
         const arRow = arByInvoice[r.invoice_id];
         const bal = arRow ? Number(arRow.balance_amount || 0) : 0;
         const total = Number(r.total_amount || 0);
-        return a + Math.max(0, total - bal);
+        return x + Math.max(0, total - bal);
       }, 0);
 
-      setKpis({
-        invoiced: invoicedTotal,
-        paid: paidTotal,
-        due: dueTotal,
-        pending: pendingTotal,
-      });
+      setKpis({ invoiced: invoicedTotal, paid: paidTotal, due: dueTotal, pending: pendingTotal });
 
-      // map rows
+      // Map rows
       let mapped = invoices.map((r) => {
         const arRow = arByInvoice[r.invoice_id];
         const outstanding = arRow ? Number(arRow.balance_amount || 0) : 0;
@@ -418,6 +532,8 @@ export default function Billing({ setView, setContext, context }) {
         const c = customersById[r.customer_id];
         const customerName = c?.display_name || "—";
         const customerEmail = c?.email || "";
+
+        const lp = lastMap[r.invoice_id];
 
         return {
           ...r,
@@ -428,10 +544,14 @@ export default function Billing({ setView, setContext, context }) {
           total: money(r.total_amount),
           outstanding_amount: outstanding,
           outstanding: money(outstanding),
+
+          last_payment_provider: lp?.provider || null,
+          last_payment_ref: lp?.provider_reference || null,
+          last_payment_at: lp?.paid_at || null,
+          last_payment_alloc: lp?.allocated_amount ?? null,
         };
       });
 
-      // search
       if (q.trim()) {
         const qq = q.trim().toLowerCase();
         mapped = mapped.filter((r) => {
@@ -443,7 +563,6 @@ export default function Billing({ setView, setContext, context }) {
         });
       }
 
-      // outstanding-only
       if (status === "due") {
         mapped = mapped.filter((r) => Number(r.outstanding_amount || 0) > 0.01);
       }
@@ -452,12 +571,12 @@ export default function Billing({ setView, setContext, context }) {
     } catch (e) {
       setToast(e?.message || "Couldn’t load billing.");
       setRows([]);
+      setLastPayByInvoice({});
     } finally {
       setLoading(false);
     }
   }
 
-  // allow Overview → Billing to pre-focus
   useEffect(() => {
     if (context?.range_from) setFrom(context.range_from);
     if (context?.range_to) setTo(context.range_to);
@@ -475,19 +594,20 @@ export default function Billing({ setView, setContext, context }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ✅ IMPORTANT: no inline minWidth wrappers here anymore
   const headerRight = (
     <>
-      <div style={{ minWidth: 160 }}>
+      <div className="filterField">
         <div className="kpiLabel">From</div>
         <input className="input" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
       </div>
 
-      <div style={{ minWidth: 160 }}>
+      <div className="filterField">
         <div className="kpiLabel">To</div>
         <input className="input" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
       </div>
 
-      <div style={{ minWidth: 190 }}>
+      <div className="filterField">
         <div className="kpiLabel">Status</div>
         <select value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="all">All</option>
@@ -499,16 +619,20 @@ export default function Billing({ setView, setContext, context }) {
         </select>
       </div>
 
-      <div style={{ minWidth: 240 }}>
+      <div className="filterField">
         <div className="kpiLabel">Search</div>
-        <input className="input" placeholder="Invoice or customer…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input
+          className="input"
+          placeholder="Invoice or customer…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
       </div>
 
       <button className="btn btnGhost" type="button" onClick={load} disabled={loading}>
         Refresh
       </button>
 
-      {/* ✅ REPLACED: Generate invoices → + New invoice */}
       <button className="btn btnPrimary" type="button" onClick={openCreateModal} disabled={loading}>
         <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
           <Icon kind="invoice" /> + New invoice
@@ -531,7 +655,6 @@ export default function Billing({ setView, setContext, context }) {
 
       {toast ? <div className="toast">{toast}</div> : null}
 
-      {/* KPI cards with icons */}
       <div className="grid grid4">
         <div className="card cardGlow">
           <div className="kpiRow">
@@ -603,7 +726,7 @@ export default function Billing({ setView, setContext, context }) {
                 <th>Period</th>
                 <th style={{ textAlign: "right" }}>Total</th>
                 <th style={{ textAlign: "right" }}>Outstanding</th>
-                <th style={{ width: 220 }} />
+                <th style={{ width: 340 }} />
               </tr>
             </thead>
             <tbody>
@@ -617,6 +740,13 @@ export default function Billing({ setView, setContext, context }) {
                       {r.customer_email ? (
                         <span className="muted" style={{ fontSize: 12 }}>
                           {r.customer_email}
+                        </span>
+                      ) : null}
+
+                      {r.last_payment_provider ? (
+                        <span className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                          Last payment: <b>{providerLabel(r.last_payment_provider)}</b>
+                          {r.last_payment_ref ? ` • ${r.last_payment_ref}` : ""}
                         </span>
                       ) : null}
                     </div>
@@ -650,6 +780,18 @@ export default function Billing({ setView, setContext, context }) {
                     </button>
 
                     <button
+                      className="btn btnGhost"
+                      type="button"
+                      onClick={() => openPaymentModal(r)}
+                      disabled={Number(r.outstanding_amount || 0) <= 0.01}
+                      style={{ marginRight: 8 }}
+                    >
+                      <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+                        <Icon kind="cash" /> Add payment
+                      </span>
+                    </button>
+
+                    <button
                       className="btn btnPrimary"
                       type="button"
                       onClick={() => {
@@ -677,7 +819,7 @@ export default function Billing({ setView, setContext, context }) {
         </div>
       </Card>
 
-      {/* ✅ CREATE MODAL */}
+      {/* CREATE INVOICE MODAL */}
       {showCreate ? (
         <Modal
           title="New invoice"
@@ -755,17 +897,91 @@ export default function Billing({ setView, setContext, context }) {
                 />
               </div>
             </div>
+          </div>
+        </Modal>
+      ) : null}
+
+      {/* PAYMENT MODAL */}
+      {showPayment && payInvoice ? (
+        <Modal
+          title={`Record payment — ${payInvoice.invoice_display}`}
+          onClose={() => setShowPayment(false)}
+          footer={
+            <>
+              <button className="btn btnGhost" type="button" onClick={() => setShowPayment(false)}>
+                Cancel
+              </button>
+              <button className="btn btnPrimary" type="button" onClick={savePayment} disabled={loading}>
+                Save payment
+              </button>
+            </>
+          }
+        >
+          <div className="formGrid">
+            <div className="card">
+              <div className="muted" style={{ fontSize: 12 }}>
+                Outstanding: <b>{money(payInvoice.outstanding_amount)}</b>
+              </div>
+              <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+                Customer: <b>{payInvoice.customer_name}</b>
+              </div>
+
+              {lastPayByInvoice?.[payInvoice.invoice_id]?.provider ? (
+                <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+                  Last payment on this invoice:{" "}
+                  <b>{providerLabel(lastPayByInvoice[payInvoice.invoice_id].provider)}</b>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="formRow2">
+              <div>
+                <div className="kpiLabel">Paid on</div>
+                <input
+                  className="input"
+                  type="date"
+                  value={payForm.paid_on}
+                  onChange={(e) => setPayForm((s) => ({ ...s, paid_on: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <div className="kpiLabel">Amount (R)</div>
+                <input
+                  className="input"
+                  type="number"
+                  value={payForm.amount}
+                  onChange={(e) => setPayForm((s) => ({ ...s, amount: e.target.value }))}
+                />
+              </div>
+            </div>
 
             <div>
-              <div className="kpiLabel">Notes (optional)</div>
-              <textarea
-                value={createForm.notes}
-                onChange={(e) => setCreateForm((s) => ({ ...s, notes: e.target.value }))}
-                placeholder="Internal notes (not stored in DB yet)"
+              <div className="kpiLabel">Payment method</div>
+              <select
+                className="input"
+                value={payForm.provider}
+                onChange={(e) => setPayForm((s) => ({ ...s, provider: e.target.value }))}
+              >
+                <option value="eft">EFT</option>
+                <option value="cash">Cash</option>
+                <option value="payfast">PayFast</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <div className="kpiLabel">Provider reference (optional)</div>
+              <input
+                className="input"
+                value={payForm.provider_reference}
+                onChange={(e) => setPayForm((s) => ({ ...s, provider_reference: e.target.value }))}
+                placeholder="e.g. FNB ref / PayFast ref"
               />
-              <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
-                Notes are UI-only right now (your invoices table doesn’t have a notes column).
-              </div>
+            </div>
+
+            <div className="muted" style={{ fontSize: 12 }}>
+              Guardrail: we block overpayments here, and the DB will keep your invoice status / AR in sync.
             </div>
           </div>
         </Modal>

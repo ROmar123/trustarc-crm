@@ -14,9 +14,8 @@ import { format } from "date-fns";
 import Card from "../components/ui/Card.jsx";
 
 /**
- * ✅ Uses the SAME logo approach as your app header should:
- * Put the logo in: /public/trustarc-logo.png
- * Then reference by URL (react-pdf needs a URL, NOT a JS import)
+ * ✅ Put your logo in: /public/trustarc-logo.png
+ * react-pdf needs a URL, NOT a JS import.
  */
 const LOGO_URL = "/trustarc-logo.png";
 
@@ -35,7 +34,7 @@ function money(n) {
 /* =========================
    Premium PDF Styles
    ========================= */
-const BRAND = "#1E3A8A"; // deep blue (premium look)
+const BRAND = "#1E3A8A";
 const BRAND_SOFT = "#E8EEFF";
 const TEXT = "#0F172A";
 const MUTED = "#64748B";
@@ -43,14 +42,7 @@ const BORDER = "#E2E8F0";
 
 const pdfStyles = StyleSheet.create({
   page: { padding: 28, fontSize: 10, color: TEXT, backgroundColor: "#FFFFFF" },
-
-  // Top brand strip
-  topStrip: {
-    height: 10,
-    backgroundColor: BRAND,
-    borderRadius: 6,
-    marginBottom: 14,
-  },
+  topStrip: { height: 10, backgroundColor: BRAND, borderRadius: 6, marginBottom: 14 },
 
   headerRow: {
     flexDirection: "row",
@@ -76,19 +68,12 @@ const pdfStyles = StyleSheet.create({
     marginTop: 6,
   },
 
-  // Cards / sections
-  card: {
-    border: `1px solid ${BORDER}`,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 10,
-  },
+  card: { border: `1px solid ${BORDER}`, borderRadius: 10, padding: 12, marginBottom: 10 },
   cardTitle: { fontSize: 11, fontWeight: 900, marginBottom: 8, color: TEXT },
 
   row: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
   col: { flex: 1 },
 
-  // Lines table
   thRow: {
     flexDirection: "row",
     backgroundColor: "#F8FAFC",
@@ -111,7 +96,6 @@ const pdfStyles = StyleSheet.create({
   c3: { flex: 2, textAlign: "right" },
   c4: { flex: 2, textAlign: "right" },
 
-  // Totals box
   totalsRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
   totalsBox: {
     border: `1px solid ${BORDER}`,
@@ -140,24 +124,11 @@ const pdfStyles = StyleSheet.create({
   },
 });
 
-function InvoicePDF({
-  invoice,
-  customer,
-  route,
-  subscription,
-  lines,
-  paidAmount,
-  balanceAmount,
-}) {
-  const invNo =
-    invoice?.invoice_number || String(invoice?.invoice_id || "").slice(0, 8);
+function InvoicePDF({ invoice, customer, route, subscription, lines, paidAmount, balanceAmount }) {
+  const invNo = invoice?.invoice_number || String(invoice?.invoice_id || "").slice(0, 8);
 
-  const pStart = invoice?.period_start
-    ? format(new Date(invoice.period_start), "yyyy-MM-dd")
-    : "—";
-  const pEnd = invoice?.period_end
-    ? format(new Date(invoice.period_end), "yyyy-MM-dd")
-    : "—";
+  const pStart = invoice?.period_start ? format(new Date(invoice.period_start), "yyyy-MM-dd") : "—";
+  const pEnd = invoice?.period_end ? format(new Date(invoice.period_end), "yyyy-MM-dd") : "—";
 
   const statusUpper = String(invoice?.status || "").toUpperCase();
 
@@ -176,21 +147,13 @@ function InvoicePDF({
               </View>
             </View>
 
-            <Text style={pdfStyles.muted}>
-              Bill To: {customer?.display_name || "—"}
-            </Text>
-            {customer?.email ? (
-              <Text style={pdfStyles.muted}>{customer.email}</Text>
-            ) : null}
+            <Text style={pdfStyles.muted}>Bill To: {customer?.display_name || "—"}</Text>
+            {customer?.email ? <Text style={pdfStyles.muted}>{customer.email}</Text> : null}
           </View>
 
           <View style={{ textAlign: "right" }}>
-            <Text style={{ fontSize: 12, fontWeight: 900, color: TEXT }}>
-              {invNo}
-            </Text>
-            <Text style={pdfStyles.muted}>
-              Period: {pStart} → {pEnd}
-            </Text>
+            <Text style={{ fontSize: 12, fontWeight: 900, color: TEXT }}>{invNo}</Text>
+            <Text style={pdfStyles.muted}>Period: {pStart} → {pEnd}</Text>
             <Text style={pdfStyles.chip}>STATUS: {statusUpper || "—"}</Text>
           </View>
         </View>
@@ -207,13 +170,9 @@ function InvoicePDF({
             <View style={pdfStyles.col}>
               <Text style={pdfStyles.muted}>Subscription</Text>
               <Text style={{ fontWeight: 900 }}>
-                {subscription?.billing_period
-                  ? `Billing: ${subscription.billing_period}`
-                  : "—"}
+                {subscription?.billing_period ? `Billing: ${subscription.billing_period}` : "—"}
               </Text>
-              <Text style={pdfStyles.muted}>
-                Seats: {subscription?.seats ?? "—"}
-              </Text>
+              <Text style={pdfStyles.muted}>Seats: {subscription?.seats ?? "—"}</Text>
             </View>
 
             <View style={pdfStyles.col}>
@@ -238,13 +197,10 @@ function InvoicePDF({
               <Text style={pdfStyles.c1}>{l.description}</Text>
               <Text style={pdfStyles.c2}>{toNum(l.qty)}</Text>
               <Text style={pdfStyles.c3}>{money(l.unit_price)}</Text>
-              <Text style={pdfStyles.c4}>
-                {money(l.line_total ?? toNum(l.qty) * toNum(l.unit_price))}
-              </Text>
+              <Text style={pdfStyles.c4}>{money(l.line_total ?? toNum(l.qty) * toNum(l.unit_price))}</Text>
             </View>
           ))}
 
-          {/* Totals */}
           <View style={pdfStyles.totalsRow}>
             <View />
             <View style={pdfStyles.totalsBox}>
@@ -288,11 +244,10 @@ export default function InvoiceView({ setView, setContext, context }) {
   const [paidAmount, setPaidAmount] = useState(0);
   const [balanceAmount, setBalanceAmount] = useState(0);
 
-  const [lineForm, setLineForm] = useState({
-    description: "",
-    qty: 1,
-    unit_price: 0,
-  });
+  const [lineForm, setLineForm] = useState({ description: "", qty: 1, unit_price: 0 });
+
+  // ✅ status override
+  const [statusEdit, setStatusEdit] = useState("issued");
 
   async function load() {
     if (!invoiceId) {
@@ -313,7 +268,9 @@ export default function InvoiceView({ setView, setContext, context }) {
         .eq("invoice_id", invoiceId)
         .single();
       if (invRes.error) throw invRes.error;
+
       setInvoice(invRes.data);
+      setStatusEdit(invRes.data?.status || "issued");
 
       // Customer
       const custRes = await supabase
@@ -375,6 +332,82 @@ export default function InvoiceView({ setView, setContext, context }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoiceId]);
 
+  // ✅ When switching to ISSUED, delete payment rows linked to this invoice (safe)
+  async function rollbackPaymentsForInvoice() {
+    // 1) get payment_ids used on this invoice
+    const { data: allocs, error: allocErr } = await supabase
+      .from("payment_allocations")
+      .select("payment_id")
+      .eq("invoice_id", invoiceId);
+
+    if (allocErr) throw allocErr;
+
+    const paymentIds = [...new Set((allocs || []).map((a) => a.payment_id).filter(Boolean))];
+
+    // 2) delete allocations for this invoice
+    const { error: delAllocErr } = await supabase
+      .from("payment_allocations")
+      .delete()
+      .eq("invoice_id", invoiceId);
+
+    if (delAllocErr) throw delAllocErr;
+
+    // 3) delete payments ONLY if they are not allocated elsewhere
+    for (const pid of paymentIds) {
+      // total allocations for this payment
+      const totalCountRes = await supabase
+        .from("payment_allocations")
+        .select("payment_id", { count: "exact", head: true })
+        .eq("payment_id", pid);
+
+      if (totalCountRes.error) throw totalCountRes.error;
+
+      const totalCount = totalCountRes.count || 0;
+
+      // if nothing else references it, delete payment row
+      if (totalCount === 0) {
+        const { error: delPayErr } = await supabase.from("payments").delete().eq("payment_id", pid);
+        if (delPayErr) throw delPayErr;
+      }
+    }
+  }
+
+  async function updateInvoiceStatus() {
+    if (!invoiceId) return;
+    setToast("");
+
+    const next = String(statusEdit || "").trim().toLowerCase();
+    if (!next) return setToast("Pick a status.");
+
+    const allowed = ["issued", "partially_paid", "paid", "overdue", "draft", "void"];
+    if (!allowed.includes(next)) return setToast("Invalid status.");
+
+    try {
+      setLoading(true);
+
+      // if moving back to issued: rollback payment rows for this invoice
+      if (next === "issued") {
+        const ok = window.confirm(
+          "Switching to ISSUED will remove payment allocations for this invoice and delete any payment rows that are only linked to this invoice.\n\nContinue?"
+        );
+        if (!ok) return;
+
+        await rollbackPaymentsForInvoice();
+      }
+
+      const { error } = await supabase.from("invoices").update({ status: next }).eq("invoice_id", invoiceId);
+      if (error) throw error;
+
+      setToast(`Status updated to ${next.toUpperCase()}.`);
+      await load();
+    } catch (e) {
+      setToast(e?.message || "Status update failed.");
+      await load(); // try to re-sync view
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function addLine() {
     if (!invoice?.invoice_id) return;
     setToast("");
@@ -386,20 +419,22 @@ export default function InvoiceView({ setView, setContext, context }) {
     if (!desc) return setToast("Description is required.");
     if (qty <= 0) return setToast("Qty must be > 0.");
 
-    // Guardrail: prevent invoice total going below 0 if you’re using negative unit_price for credits.
+    // Guardrail: prevent invoice total going below 0 with negative credits
     const proposedDelta = Number((qty * unit).toFixed(2));
     const currentTotal = toNum(invoice.total_amount);
     const nextTotal = Number((currentTotal + proposedDelta).toFixed(2));
 
     if (nextTotal < 0) {
-      return setToast(`Credit too large. Invoice total cannot go below R 0.00 (would be ${money(nextTotal)}).`);
+      return setToast(
+        `Credit too large. Invoice total cannot go below R 0.00 (would be ${money(nextTotal)}).`
+      );
     }
 
     const payload = {
       invoice_id: invoice.invoice_id,
       description: desc,
       qty,
-      unit_price: unit, // can be negative if DB allows
+      unit_price: unit,
     };
 
     const insRes = await supabase.from("invoice_lines").insert(payload);
@@ -417,8 +452,7 @@ export default function InvoiceView({ setView, setContext, context }) {
   }
 
   const invNo =
-    invoice?.invoice_number ||
-    (invoice?.invoice_id ? String(invoice.invoice_id).slice(0, 8) : "—");
+    invoice?.invoice_number || (invoice?.invoice_id ? String(invoice.invoice_id).slice(0, 8) : "—");
 
   const pdfDoc = useMemo(() => {
     if (!invoice) return null;
@@ -451,11 +485,7 @@ export default function InvoiceView({ setView, setContext, context }) {
           </button>
 
           {pdfDoc ? (
-            <PDFDownloadLink
-              document={pdfDoc}
-              fileName={`invoice-${invNo}.pdf`}
-              style={{ textDecoration: "none" }}
-            >
+            <PDFDownloadLink document={pdfDoc} fileName={`invoice-${invNo}.pdf`} style={{ textDecoration: "none" }}>
               {({ loading: pdfLoading }) => (
                 <button className="btn btnPrimary" type="button" disabled={pdfLoading}>
                   {pdfLoading ? "Preparing PDF..." : "Download PDF"}
@@ -483,7 +513,29 @@ export default function InvoiceView({ setView, setContext, context }) {
             <div>Total: <b>{money(invoice?.total_amount)}</b></div>
             <div>Paid: <b>{money(paidAmount)}</b></div>
             <div>Balance: <b>{money(balanceAmount)}</b></div>
-            <div className="muted">Invoice status: {String(invoice?.status || "").toUpperCase()}</div>
+
+            <div style={{ marginTop: 8 }}>
+              <div className="muted" style={{ marginBottom: 6 }}>Invoice status</div>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <select value={statusEdit} onChange={(e) => setStatusEdit(e.target.value)}>
+                  <option value="issued">issued</option>
+                  <option value="partially_paid">partially_paid</option>
+                  <option value="paid">paid</option>
+                  <option value="overdue">overdue</option>
+                  <option value="draft">draft</option>
+                  <option value="void">void</option>
+                </select>
+
+                <button className="btn btnPrimary" type="button" onClick={updateInvoiceStatus} disabled={loading}>
+                  Save
+                </button>
+              </div>
+
+              <div className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+                If you change back to <b>issued</b>, this will remove payment allocations for this invoice and delete any payment
+                rows that are only linked to this invoice.
+              </div>
+            </div>
           </div>
         </Card>
       </div>

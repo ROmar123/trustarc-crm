@@ -2,17 +2,74 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import Card from "../components/ui/Card.jsx";
 
-function toNum(x) {
-  const n = Number(x);
-  return Number.isFinite(n) ? n : 0;
-}
-
 function isoDate(d) {
   const x = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
   return x.toISOString().slice(0, 10);
 }
+function toNum(x) {
+  const n = Number(x);
+  return Number.isFinite(n) ? n : 0;
+}
+function money(n) {
+  const v = toNum(n);
+  return `R ${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 
-/** same modal shell you used in Billing */
+function StatusBadge({ tone, children }) {
+  const bg =
+    tone === "green"
+      ? "rgba(65, 230, 155, .14)"
+      : tone === "amber"
+      ? "rgba(255, 186, 0, .14)"
+      : tone === "red"
+      ? "rgba(255, 90, 90, .14)"
+      : "rgba(255,255,255,.08)";
+  const border =
+    tone === "green"
+      ? "rgba(65, 230, 155, .22)"
+      : tone === "amber"
+      ? "rgba(255, 186, 0, .20)"
+      : tone === "red"
+      ? "rgba(255, 90, 90, .20)"
+      : "rgba(255,255,255,.10)";
+
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "6px 10px",
+        borderRadius: 999,
+        border: `1px solid ${border}`,
+        background: bg,
+        color: "rgba(255,255,255,.90)",
+        fontSize: 12,
+        fontWeight: 850,
+        letterSpacing: ".2px",
+        whiteSpace: "nowrap",
+      }}
+    >
+      <span
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: 999,
+          background:
+            tone === "green"
+              ? "rgba(65, 230, 155, 1)"
+              : tone === "amber"
+              ? "rgba(255, 186, 0, 1)"
+              : tone === "red"
+              ? "rgba(255, 90, 90, 1)"
+              : "rgba(255,255,255,.35)",
+        }}
+      />
+      {children}
+    </span>
+  );
+}
+
 function Modal({ title, onClose, children, footer }) {
   return (
     <div className="modalBackdrop" onMouseDown={onClose}>
@@ -30,93 +87,97 @@ function Modal({ title, onClose, children, footer }) {
   );
 }
 
+// next_period_start rules for your MVP:
+// - weekly: next_period_start = start_date (your generator uses next_period_start <= target)
+// - monthly: next_period_start = start_date (same idea)
+// You can move this later if you want "next cycle" logic, but this is the correct minimal behavior.
+function computeNextPeriodStart(start_date /* yyyy-mm-dd */) {
+  return start_date;
+}
+
 export default function Subscriptions({ setView, setContext, context }) {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState("");
 
+  // filters
   const [status, setStatus] = useState("all"); // all | active | paused | cancelled
+  const [period, setPeriod] = useState("all"); // all | weekly | monthly
   const [q, setQ] = useState("");
 
-  const [subs, setSubs] = useState([]);
-  const [customersById, setCustomersById] = useState({});
-  const [routesById, setRoutesById] = useState({});
-
-  // ✅ create modal
-  const [showCreate, setShowCreate] = useState(false);
+  // data
+  const [rows, setRows] = useState([]);
   const [customersPick, setCustomersPick] = useState([]);
   const [routesPick, setRoutesPick] = useState([]);
+  const [pricing, setPricing] = useState([]); // route_pricing rows (client-side resolve)
 
+  // create modal
+  const [showCreate, setShowCreate] = useState(false);
   const [createForm, setCreateForm] = useState({
     customer_id: "",
     route_id: "",
-    billing_period: "monthly", // weekly | monthly (per your enum)
+    billing_period: "weekly",
     seats: 1,
-    status: "active",
+    price_override: "", // string input (optional)
     start_date: isoDate(new Date()),
+    status: "active",
+    notes: "",
   });
 
+  // --------- loaders ----------
   async function loadPickers() {
     setToast("");
-    try {
-      const custRes = await supabase
+
+    const [custRes, routeRes, pricingRes] = await Promise.all([
+      supabase
         .from("customers")
         .select("customer_id, display_name, email, status")
         .eq("status", "active")
         .order("display_name", { ascending: true })
-        .limit(2000);
+        .limit(2000),
 
-      if (custRes.error) throw custRes.error;
-      setCustomersPick(custRes.data || []);
-
-      const routeRes = await supabase
+      supabase
         .from("routes")
         .select("route_id, route_name, origin_label, destination_label, is_active")
-        .eq("is_active", true)
         .order("route_name", { ascending: true })
-        .limit(2000);
+        .limit(2000),
 
-      if (routeRes.error) throw routeRes.error;
-      setRoutesPick(routeRes.data || []);
-    } catch (e) {
-      setToast(e?.message || "Could not load pickers.");
-      setCustomersPick([]);
-      setRoutesPick([]);
-    }
+      supabase
+        .from("route_pricing")
+        .select("pricing_id, route_id, weekly_price, monthly_price, effective_from, effective_to")
+        .order("effective_from", { ascending: false })
+        .limit(5000),
+    ]);
+
+    if (custRes.error) setToast(custRes.error.message);
+    if (routeRes.error) setToast(routeRes.error.message);
+    if (pricingRes.error) setToast(pricingRes.error.message);
+
+    setCustomersPick(custRes.data || []);
+    setRoutesPick(routeRes.data || []);
+    setPricing(pricingRes.data || []);
   }
 
-  async function createSubscription() {
-    setToast("");
+  function resolveRoutePrice(route_id, billing_period, effectiveDate /* yyyy-mm-dd */) {
+    // pick the most recent pricing row where effective_from <= date and (effective_to null or >= date)
+    const d = effectiveDate ? new Date(effectiveDate) : new Date();
 
-    if (!createForm.customer_id) return setToast("Pick a customer.");
-    if (!createForm.route_id) return setToast("Pick a route.");
-
-    const seats = toNum(createForm.seats);
-    if (seats <= 0) return setToast("Seats must be > 0.");
-
-    // ✅ insert only fields that should exist (if a field doesn’t exist you’ll get a clear error)
-    const payload = {
-      customer_id: createForm.customer_id,
-      route_id: createForm.route_id,
-      billing_period: createForm.billing_period,
-      seats,
-      status: createForm.status,
-      start_date: createForm.start_date,
-    };
-
-    const { error } = await supabase.from("subscriptions").insert(payload);
-    if (error) return setToast(error.message);
-
-    setShowCreate(false);
-    setCreateForm({
-      customer_id: "",
-      route_id: "",
-      billing_period: "monthly",
-      seats: 1,
-      status: "active",
-      start_date: isoDate(new Date()),
+    const candidates = pricing.filter((p) => {
+      if (p.route_id !== route_id) return false;
+      const from = p.effective_from ? new Date(p.effective_from) : null;
+      const to = p.effective_to ? new Date(p.effective_to) : null;
+      if (from && from > d) return false;
+      if (to && to < d) return false;
+      return true;
     });
 
-    await load();
+    const best = candidates.sort((a, b) => {
+      const af = a.effective_from ? new Date(a.effective_from).getTime() : 0;
+      const bf = b.effective_from ? new Date(b.effective_from).getTime() : 0;
+      return bf - af;
+    })[0];
+
+    if (!best) return 0;
+    return billing_period === "monthly" ? toNum(best.monthly_price) : toNum(best.weekly_price);
   }
 
   async function load() {
@@ -124,153 +185,231 @@ export default function Subscriptions({ setView, setContext, context }) {
     setToast("");
 
     try {
-      let qry = supabase
+      let query = supabase
         .from("subscriptions")
         .select(
-          "subscription_id, customer_id, route_id, billing_period, seats, status, start_date, next_period_start, created_at"
+          "subscription_id, customer_id, route_id, billing_period, seats, price_override, start_date, next_period_start, status, notes, created_at"
         )
         .order("created_at", { ascending: false })
-        .limit(1500);
+        .limit(2000);
 
-      if (status !== "all") qry = qry.eq("status", status);
+      if (status !== "all") query = query.eq("status", status);
+      if (period !== "all") query = query.eq("billing_period", period);
 
-      const { data, error } = await qry;
+      const { data, error } = await query;
       if (error) throw error;
 
-      const rows = data || [];
-      setSubs(rows);
+      const subs = data || [];
 
-      // lookups: customers + routes for list readability
-      const custIds = [...new Set(rows.map((r) => r.customer_id).filter(Boolean))];
-      const routeIds = [...new Set(rows.map((r) => r.route_id).filter(Boolean))];
+      // map names via pickers (fast)
+      const custById = Object.fromEntries((customersPick || []).map((c) => [c.customer_id, c]));
+      const routeById = Object.fromEntries((routesPick || []).map((r) => [r.route_id, r]));
 
-      let nextCustomersById = {};
-      if (custIds.length) {
-        const { data: cust, error: custErr } = await supabase
-          .from("customers")
-          .select("customer_id, display_name, email")
-          .in("customer_id", custIds)
-          .limit(2000);
+      let mapped = subs.map((s) => {
+        const c = custById[s.customer_id];
+        const r = routeById[s.route_id];
 
-        if (custErr) throw custErr;
-        nextCustomersById = Object.fromEntries((cust || []).map((c) => [c.customer_id, c]));
+        const basePrice = resolveRoutePrice(s.route_id, s.billing_period, s.start_date);
+        const override = s.price_override === null || s.price_override === undefined ? null : toNum(s.price_override);
+        const unitPrice = override !== null && override !== 0 ? override : basePrice;
+
+        const estValue = toNum(s.seats) * unitPrice;
+
+        return {
+          ...s,
+          customer_name: c?.display_name || "—",
+          customer_email: c?.email || "",
+          route_name: r?.route_name || "—",
+          route_leg: r ? `${r.origin_label || ""} → ${r.destination_label || ""}`.trim() : "",
+          price_unit: unitPrice,
+          est_value: estValue,
+        };
+      });
+
+      // search (client-side)
+      if (q.trim()) {
+        const qq = q.trim().toLowerCase();
+        mapped = mapped.filter((r) => {
+          return (
+            String(r.customer_name || "").toLowerCase().includes(qq) ||
+            String(r.customer_email || "").toLowerCase().includes(qq) ||
+            String(r.route_name || "").toLowerCase().includes(qq) ||
+            String(r.subscription_id || "").toLowerCase().includes(qq)
+          );
+        });
       }
-      setCustomersById(nextCustomersById);
 
-      let nextRoutesById = {};
-      if (routeIds.length) {
-        const { data: rts, error: rtErr } = await supabase
-          .from("routes")
-          .select("route_id, route_name, origin_label, destination_label, is_active")
-          .in("route_id", routeIds)
-          .limit(2000);
-
-        if (rtErr) throw rtErr;
-        nextRoutesById = Object.fromEntries((rts || []).map((r) => [r.route_id, r]));
-      }
-      setRoutesById(nextRoutesById);
+      setRows(mapped);
     } catch (e) {
-      setToast(e?.message || "Could not load subscriptions.");
-      setSubs([]);
-      setCustomersById({});
-      setRoutesById({});
+      setToast(e?.message || "Couldn’t load subscriptions.");
+      setRows([]);
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
+  // --------- actions ----------
+  async function createSubscription() {
+    setToast("");
 
+    const customer_id = createForm.customer_id;
+    const route_id = createForm.route_id;
+    const billing_period = createForm.billing_period;
+    const seats = Math.max(1, Math.floor(toNum(createForm.seats)));
+    const start_date = createForm.start_date || isoDate(new Date());
+    const next_period_start = computeNextPeriodStart(start_date);
+
+    if (!customer_id) return setToast("Pick a customer.");
+    if (!route_id) return setToast("Pick a route.");
+
+    // price_override optional
+    const poRaw = String(createForm.price_override ?? "").trim();
+    const price_override = poRaw === "" ? null : Number(poRaw);
+    if (poRaw !== "" && !Number.isFinite(price_override)) return setToast("Price override must be a number.");
+    if (price_override !== null && price_override < 0) return setToast("Price override cannot be negative.");
+
+    const payload = {
+      customer_id,
+      route_id,
+      billing_period,
+      seats,
+      price_override,
+      start_date,
+      next_period_start,
+      status: createForm.status || "active",
+      notes: createForm.notes || null,
+    };
+
+    const { error } = await supabase.from("subscriptions").insert(payload);
+    if (error) return setToast(error.message);
+
+    setShowCreate(false);
+    setCreateForm((s) => ({
+      ...s,
+      customer_id: "",
+      route_id: "",
+      seats: 1,
+      price_override: "",
+      start_date: isoDate(new Date()),
+      status: "active",
+      notes: "",
+    }));
+
+    await load();
+  }
+
+  async function setSubStatus(subscription_id, nextStatus) {
+    setToast("");
+    const { error } = await supabase.from("subscriptions").update({ status: nextStatus }).eq("subscription_id", subscription_id);
+    if (error) return setToast(error.message);
+    await load();
+  }
+
+  function toneForStatus(s) {
+    const x = String(s || "").toLowerCase();
+    if (x === "active") return "green";
+    if (x === "paused") return "amber";
+    if (x === "cancelled") return "red";
+    return "muted";
+  }
+
+  // --------- lifecycle ----------
   useEffect(() => {
-    // pre-load for modal dropdowns
     loadPickers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filtered = useMemo(() => {
-    if (!q.trim()) return subs;
-    const qq = q.trim().toLowerCase();
+  useEffect(() => {
+    // only load when pickers exist (so names resolve)
+    if (customersPick.length || routesPick.length) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, period, q, customersPick, routesPick]);
 
-    return subs.filter((s) => {
-      const c = customersById[s.customer_id];
-      const r = routesById[s.route_id];
+  // --------- derived KPIs ----------
+  const kpi = useMemo(() => {
+    const active = rows.filter((r) => String(r.status).toLowerCase() === "active").length;
+    const paused = rows.filter((r) => String(r.status).toLowerCase() === "paused").length;
+    const monthlyValue = rows
+      .filter((r) => String(r.status).toLowerCase() === "active")
+      .reduce((a, r) => a + toNum(r.est_value), 0);
 
-      return (
-        String(s.subscription_id || "").toLowerCase().includes(qq) ||
-        String(c?.display_name || "").toLowerCase().includes(qq) ||
-        String(c?.email || "").toLowerCase().includes(qq) ||
-        String(r?.route_name || "").toLowerCase().includes(qq) ||
-        String(r?.origin_label || "").toLowerCase().includes(qq) ||
-        String(r?.destination_label || "").toLowerCase().includes(qq)
-      );
-    });
-  }, [subs, q, customersById, routesById]);
+    return { active, paused, monthlyValue };
+  }, [rows]);
 
-  const kpiTotal = subs.length;
-  const kpiActive = subs.filter((s) => String(s.status || "").toLowerCase() === "active").length;
-  const kpiSeats = subs.reduce((a, s) => a + toNum(s.seats), 0);
+  const headerRight = (
+    <>
+      <div style={{ minWidth: 180 }}>
+        <div className="kpiLabel">Status</div>
+        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="paused">Paused</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div style={{ minWidth: 180 }}>
+        <div className="kpiLabel">Billing</div>
+        <select value={period} onChange={(e) => setPeriod(e.target.value)}>
+          <option value="all">All</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+
+      <div style={{ minWidth: 260 }}>
+        <div className="kpiLabel">Search</div>
+        <input className="input" placeholder="Customer / route / email…" value={q} onChange={(e) => setQ(e.target.value)} />
+      </div>
+
+      <button className="btn btnGhost" type="button" onClick={load} disabled={loading}>
+        Refresh
+      </button>
+
+      <button className="btn btnPrimary" type="button" onClick={() => setShowCreate(true)}>
+        + Subscription
+      </button>
+    </>
+  );
 
   return (
     <div>
       <div className="pageHead">
         <div>
           <div className="pageTitle">Subscriptions</div>
-          <div className="pageSub">Recurring routes per customer</div>
+          <div className="pageSub">Manage customer subscriptions (weekly / monthly)</div>
         </div>
-
-        <div className="pageActions">
-          <div style={{ minWidth: 240 }}>
-            <div className="kpiLabel">Search</div>
-            <input
-              className="input"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Customer / route / email…"
-            />
-          </div>
-
-          <div style={{ minWidth: 190 }}>
-            <div className="kpiLabel">Filter</div>
-            <select value={status} onChange={(e) => setStatus(e.target.value)}>
-              <option value="all">All</option>
-              <option value="active">Active</option>
-              <option value="paused">Paused</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-
-          <button className="btn btnGhost" type="button" onClick={load} disabled={loading}>
-            Refresh
-          </button>
-
-          <button className="btn btnPrimary" type="button" onClick={() => setShowCreate(true)} disabled={loading}>
-            + Subscription
-          </button>
-        </div>
+        <div className="pageActions">{headerRight}</div>
       </div>
 
       {toast ? <div className="toast">{toast}</div> : null}
 
-      {/* KPI strip */}
-      <div className="grid grid3" style={{ marginBottom: 14 }}>
-        <div className="card">
-          <div className="kpiLabel">Total subscriptions</div>
-          <div className="kpiValue" style={{ fontSize: 22 }}>{kpiTotal}</div>
-        </div>
-        <div className="card">
+      {/* KPI row */}
+      <div className="grid grid4">
+        <div className="card cardGlow">
           <div className="kpiLabel">Active</div>
-          <div className="kpiValue" style={{ fontSize: 22 }}>{kpiActive}</div>
+          <div className="kpiValue" style={{ fontSize: 22 }}>{kpi.active}</div>
         </div>
         <div className="card">
-          <div className="kpiLabel">Total seats</div>
-          <div className="kpiValue" style={{ fontSize: 22 }}>{kpiSeats}</div>
+          <div className="kpiLabel">Paused</div>
+          <div className="kpiValue" style={{ fontSize: 22 }}>{kpi.paused}</div>
+        </div>
+        <div className="card">
+          <div className="kpiLabel">Est. value (active)</div>
+          <div className="kpiValue" style={{ fontSize: 22 }}>{money(kpi.monthlyValue)}</div>
+          <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+            Uses override if set, else route pricing.
+          </div>
+        </div>
+        <div className="card">
+          <div className="kpiLabel">Shown</div>
+          <div className="kpiValue" style={{ fontSize: 22 }}>{rows.length}</div>
         </div>
       </div>
 
-      <Card title="Subscription list" action={<span className="chip">{filtered.length} shown</span>}>
+      <div style={{ height: 14 }} />
+
+      <Card title="Subscriptions" action={<span className="chip">{rows.length} shown</span>}>
         <div className="tableWrap">
           <table>
             <thead>
@@ -278,64 +417,89 @@ export default function Subscriptions({ setView, setContext, context }) {
                 <th>Customer</th>
                 <th>Route</th>
                 <th>Billing</th>
-                <th style={{ textAlign: "right" }}>Seats</th>
-                <th>Status</th>
+                <th>Seats</th>
                 <th>Start</th>
-                <th style={{ width: 140 }} />
+                <th>Next</th>
+                <th>Price</th>
+                <th style={{ textAlign: "right" }}>Est. Value</th>
+                <th>Status</th>
+                <th style={{ width: 280 }} />
               </tr>
             </thead>
             <tbody>
-              {filtered.map((s) => {
-                const c = customersById[s.customer_id];
-                const r = routesById[s.route_id];
-
-                const custName = c?.display_name || "—";
-                const custEmail = c?.email || "";
-
-                const routeName =
-                  r?.route_name ||
-                  (r?.origin_label && r?.destination_label ? `${r.origin_label} → ${r.destination_label}` : "—");
-
-                return (
-                  <tr key={s.subscription_id}>
-                    <td>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontWeight: 850 }}>{custName}</span>
-                        {custEmail ? <span className="muted" style={{ fontSize: 12 }}>{custEmail}</span> : null}
-                      </div>
-                    </td>
-
-                    <td style={{ fontWeight: 850 }}>{routeName}</td>
-
-                    <td className="muted">{s.billing_period || "—"}</td>
-
-                    <td style={{ textAlign: "right" }}>{toNum(s.seats)}</td>
-
-                    <td>{String(s.status || "—")}</td>
-
-                    <td className="muted">{s.start_date || "—"}</td>
-
-                    <td style={{ textAlign: "right" }}>
-                      <button
-                        className="btn btnPrimary"
-                        type="button"
-                        onClick={() => {
-                          setContext?.({ subscription_id: s.subscription_id });
-                          setView?.("subscription_details");
-                        }}
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-
-              {!filtered.length ? (
-                <tr>
-                  <td colSpan={7} className="muted">
-                    No subscriptions found.
+              {rows.map((r) => (
+                <tr key={r.subscription_id}>
+                  <td>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span style={{ fontWeight: 850 }}>{r.customer_name}</span>
+                      {r.customer_email ? <span className="muted" style={{ fontSize: 12 }}>{r.customer_email}</span> : null}
+                    </div>
                   </td>
+
+                  <td>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span style={{ fontWeight: 850 }}>{r.route_name}</span>
+                      {r.route_leg ? <span className="muted" style={{ fontSize: 12 }}>{r.route_leg}</span> : null}
+                    </div>
+                  </td>
+
+                  <td style={{ fontWeight: 850 }}>{String(r.billing_period || "").toUpperCase()}</td>
+                  <td style={{ fontWeight: 850 }}>{toNum(r.seats)}</td>
+                  <td className="muted">{r.start_date}</td>
+                  <td className="muted">{r.next_period_start}</td>
+
+                  <td style={{ fontWeight: 850 }}>
+                    {money(r.price_unit)}
+                    {r.price_override !== null && r.price_override !== undefined ? (
+                      <span className="muted" style={{ fontSize: 12, marginLeft: 8 }}>(override)</span>
+                    ) : null}
+                  </td>
+
+                  <td style={{ textAlign: "right", fontWeight: 900 }}>{money(r.est_value)}</td>
+
+                  <td>
+                    <StatusBadge tone={toneForStatus(r.status)}>
+                      {String(r.status || "").toUpperCase()}
+                    </StatusBadge>
+                  </td>
+
+                  <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                    <button
+                      className="btn btnGhost"
+                      type="button"
+                      onClick={() => {
+                        setContext?.({ subscription_id: r.subscription_id, customer_id: r.customer_id, route_id: r.route_id });
+                        setView?.("subscription_details");
+                      }}
+                      style={{ marginRight: 8 }}
+                    >
+                      View
+                    </button>
+
+                    {String(r.status).toLowerCase() === "active" ? (
+                      <button className="btn btnGhost" type="button" onClick={() => setSubStatus(r.subscription_id, "paused")} style={{ marginRight: 8 }}>
+                        Pause
+                      </button>
+                    ) : null}
+
+                    {String(r.status).toLowerCase() === "paused" ? (
+                      <button className="btn btnGhost" type="button" onClick={() => setSubStatus(r.subscription_id, "active")} style={{ marginRight: 8 }}>
+                        Activate
+                      </button>
+                    ) : null}
+
+                    {String(r.status).toLowerCase() !== "cancelled" ? (
+                      <button className="btn btnGhost" type="button" onClick={() => setSubStatus(r.subscription_id, "cancelled")}>
+                        Cancel
+                      </button>
+                    ) : null}
+                  </td>
+                </tr>
+              ))}
+
+              {!rows.length ? (
+                <tr>
+                  <td colSpan={10} className="muted">No subscriptions found for this filter.</td>
                 </tr>
               ) : null}
             </tbody>
@@ -343,7 +507,7 @@ export default function Subscriptions({ setView, setContext, context }) {
         </div>
       </Card>
 
-      {/* ✅ CREATE MODAL */}
+      {/* CREATE MODAL */}
       {showCreate ? (
         <Modal
           title="New subscription"
@@ -384,8 +548,7 @@ export default function Subscriptions({ setView, setContext, context }) {
                 <option value="">Select…</option>
                 {routesPick.map((r) => (
                   <option key={r.route_id} value={r.route_id}>
-                    {r.route_name ||
-                      (r.origin_label && r.destination_label ? `${r.origin_label} → ${r.destination_label}` : r.route_id)}
+                    {r.route_name}
                   </option>
                 ))}
               </select>
@@ -408,6 +571,7 @@ export default function Subscriptions({ setView, setContext, context }) {
                 <input
                   className="input"
                   type="number"
+                  min={1}
                   value={createForm.seats}
                   onChange={(e) => setCreateForm((s) => ({ ...s, seats: e.target.value }))}
                 />
@@ -438,8 +602,26 @@ export default function Subscriptions({ setView, setContext, context }) {
               </div>
             </div>
 
-            <div className="muted" style={{ fontSize: 12 }}>
-              Tip: pricing will come from the latest <b>route_pricing</b> row in your details page.
+            <div>
+              <div className="kpiLabel">Price override (optional)</div>
+              <input
+                className="input"
+                value={createForm.price_override}
+                onChange={(e) => setCreateForm((s) => ({ ...s, price_override: e.target.value }))}
+                placeholder="Leave blank to use route pricing"
+              />
+              <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+                If set, this replaces route pricing for this subscription.
+              </div>
+            </div>
+
+            <div>
+              <div className="kpiLabel">Notes (optional)</div>
+              <textarea
+                value={createForm.notes}
+                onChange={(e) => setCreateForm((s) => ({ ...s, notes: e.target.value }))}
+                placeholder="Internal notes"
+              />
             </div>
           </div>
         </Modal>
