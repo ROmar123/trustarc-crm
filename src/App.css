@@ -1,0 +1,920 @@
+/* =========================
+   TrustArc CRM — Core Theme
+   Black / White / Blue
+   Desktop unchanged, mobile fixes only
+   ========================= */
+
+:root{
+  --bg0:#070a14;
+  --bg1:#0a1023;
+
+  --panel: rgba(255,255,255,.06);
+  --panel2: rgba(255,255,255,.08);
+
+  --stroke: rgba(255,255,255,.10);
+  --stroke2: rgba(255,255,255,.16);
+
+  --text: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.62);
+
+  --blue:#2f6bff;
+  --blue2:#3aa2ff;
+  --purple:#8a5cff;
+
+  --shadow: 0 18px 55px rgba(0,0,0,.45);
+  --shadow2: 0 26px 90px rgba(0,0,0,.55);
+
+  --radius: 18px;
+  --radius2: 24px;
+
+  /* tells browsers (iOS Safari esp.) we are a dark theme */
+  color-scheme: dark;
+}
+
+*{ box-sizing:border-box; }
+
+html, body {
+  height:auto;
+  min-height:100%;
+  width:100%;
+  overflow-x:hidden;
+}
+
+#root{
+  min-height:100vh;
+  width:100%;
+}
+
+body{
+  margin:0;
+  color:var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background:
+    radial-gradient(1100px 750px at 16% 26%, rgba(47,107,255,.18), transparent 60%),
+    radial-gradient(900px 650px at 78% 18%, rgba(138,92,255,.14), transparent 55%),
+    radial-gradient(900px 650px at 58% 86%, rgba(58,162,255,.10), transparent 60%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+}
+
+/* -------------------------
+   Layout containers
+------------------------- */
+
+.containerWide{
+  width: min(1320px, calc(100% - 44px));
+  margin: 0 auto;
+}
+
+.app-shell{
+  min-height:100vh;
+  width:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+/* IMPORTANT: single source of truth for content width/padding */
+.app-content{
+  width:100%;
+  padding: 22px 0 92px;
+}
+
+.app-contentInner{
+  width: min(1280px, calc(100% - 44px));
+  margin: 0 auto;
+}
+
+/* -------------------------
+   Header / Nav
+------------------------- */
+
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: linear-gradient(180deg, rgba(8,10,18,.88), rgba(8,10,18,.62));
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.topbarInner{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+
+.navWrap{
+  display:flex;
+  align-items:center;
+  gap: 14px;
+  width: 100%;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  min-width: 160px;
+}
+
+.brandMark{
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  border: 1px solid rgba(255,255,255,.12);
+  background:
+    radial-gradient(12px 12px at 30% 30%, rgba(255,255,255,.25), transparent 60%),
+    linear-gradient(135deg, rgba(47,107,255,.85), rgba(138,92,255,.55));
+  box-shadow: 0 14px 40px rgba(47,107,255,.14);
+  color: rgba(255,255,255,.92);
+}
+
+.brandName{
+  font-weight: 950;
+  letter-spacing: .2px;
+  font-size: 15px;
+  color: rgba(255,255,255,.92);
+}
+
+.navTabs{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.navBtn{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255,255,255,.72);
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.navBtn .ico{
+  width: 18px;
+  height: 18px;
+  opacity: .95;
+}
+
+.navBtn:hover{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.92);
+}
+
+.navBtn.active{
+  background: linear-gradient(180deg, rgba(47,107,255,.22), rgba(47,107,255,.10));
+  border-color: rgba(47,107,255,.35);
+  box-shadow: 0 12px 28px rgba(47,107,255,.12);
+  color: rgba(255,255,255,.95);
+}
+
+.navRight{ min-width: 40px; }
+
+/* -------------------------
+   Core UI components
+------------------------- */
+
+.pageHead{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:14px;
+  margin: 6px 0 16px;
+}
+
+.pageTitle{
+  font-size: 20px;
+  font-weight: 950;
+  letter-spacing: .2px;
+}
+
+.pageSub{
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.pageActions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:flex-end;
+}
+
+.section{
+  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: var(--radius2);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.card{
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.card.cardGlow{
+  border-color: rgba(47,107,255,.22);
+  box-shadow: 0 22px 70px rgba(47,107,255,.10);
+  background:
+    radial-gradient(900px 400px at 30% 0%, rgba(47,107,255,.16), transparent 55%),
+    rgba(255,255,255,.05);
+}
+
+.grid{ display:grid; gap:14px; }
+.grid2{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+.grid3{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+.grid4{ grid-template-columns: repeat(4, minmax(0,1fr)); }
+
+@media (max-width: 980px){
+  .grid4{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .grid3{ grid-template-columns: repeat(1, minmax(0,1fr)); }
+}
+@media (max-width: 520px){
+  .grid2{ grid-template-columns: repeat(1, minmax(0,1fr)); }
+}
+
+/* KPI */
+.kpiLabel{
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: .15px;
+}
+
+.kpiValue{
+  margin-top: 8px;
+  font-size: 28px;
+  font-weight: 950;
+  letter-spacing: .2px;
+}
+
+.kpiRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.kpiIcon{
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+}
+
+/* Buttons */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  cursor:pointer;
+  transition: .18s ease;
+}
+
+.btn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.16);
+  background: rgba(255,255,255,.09);
+}
+
+.btnPrimary{
+  border-color: rgba(47,107,255,.35);
+  background: linear-gradient(135deg, rgba(47,107,255,.60), rgba(58,162,255,.22));
+  box-shadow: 0 14px 30px rgba(47,107,255,.18);
+}
+
+.btnGhost{
+  background: transparent;
+  border-color: rgba(255,255,255,.10);
+}
+
+/* Inputs */
+.input, select, textarea{
+  width:100%;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(10,12,20,.70);
+  color: rgba(255,255,255,.92);
+  padding: 10px 12px;
+  outline:none;
+}
+
+textarea{ min-height: 92px; resize: vertical; }
+
+select{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  padding-right: 42px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255,255,255,.70) 50%),
+    linear-gradient(135deg, rgba(255,255,255,.70) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat:no-repeat;
+}
+
+select option{
+  background: #0b1024;
+  color: rgba(255,255,255,.92);
+}
+
+.input:focus, select:focus, textarea:focus{
+  border-color: rgba(47,107,255,.65);
+  box-shadow: 0 0 0 4px rgba(47,107,255,.16);
+}
+
+/* Safari/iOS date input visibility */
+input[type="date"].input{
+  color: rgba(255,255,255,.92) !important;
+  background: rgba(10,12,20,.70) !important;
+}
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field{
+  color: rgba(255,255,255,.92) !important;
+}
+input[type="date"]::-webkit-calendar-picker-indicator{
+  filter: invert(1);
+  opacity: .85;
+}
+
+/* Tables */
+.tableWrap{
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+
+  /* ✅ FIX: do NOT clip tables (this was overflow:hidden) */
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+table{
+  width:100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th, td{
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+th{
+  text-align:left;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+tr:hover td{ background: rgba(255,255,255,.04); }
+
+/* Card header helper */
+.cardHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
+.cardTitle{
+  font-size:14px;
+  font-weight:900;
+}
+
+/* =========================
+   MODAL — premium solid surface (less transparent)
+   ========================= */
+
+.modalBackdrop{
+  position:fixed; inset:0;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display:grid;
+  place-items:center;
+  z-index:1000;
+  padding: 16px;
+}
+
+.modalBox{
+  width:min(640px, calc(100% - 28px));
+  max-height: 90vh;
+  overflow:auto;
+
+  /* ✅ solid, readable surface */
+  background: linear-gradient(180deg, rgba(18,22,40,.98), rgba(12,14,28,.96));
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 22px;
+  box-shadow:
+    0 40px 120px rgba(0,0,0,.70),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.modalHead{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  padding: 14px 16px;
+  background: rgba(10,12,24,.92);
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+
+.modalTitle{
+  font-weight: 950;
+  letter-spacing:.2px;
+  font-size: 16px;
+}
+
+.modalBody{
+  padding: 16px;
+}
+
+.modalFooter{
+  padding: 14px 16px;
+  border-top: 1px solid rgba(255,255,255,.10);
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+
+/* =========================
+   FORMS — higher contrast, easier scan
+   ========================= */
+
+.kpiLabel{
+  font-size: 12px;
+  color: rgba(255,255,255,.70);
+  letter-spacing: .15px;
+  margin-bottom: 6px;
+}
+
+.input, select, textarea{
+  width:100%;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.14);
+
+  /* ✅ darker field surface (less see-through) */
+  background: rgba(8,10,18,.92);
+
+  color: rgba(255,255,255,.92);
+  padding: 12px 12px;
+  outline:none;
+}
+
+.input::placeholder, textarea::placeholder{
+  color: rgba(255,255,255,.42);
+}
+
+.input:focus, select:focus, textarea:focus{
+  border-color: rgba(47,107,255,.70);
+  box-shadow: 0 0 0 4px rgba(47,107,255,.18);
+}
+
+textarea{ min-height: 92px; resize: vertical; }
+
+select{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  padding-right: 42px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255,255,255,.75) 50%),
+    linear-gradient(135deg, rgba(255,255,255,.75) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat:no-repeat;
+}
+
+select option{
+  background: #0b1024;
+  color: rgba(255,255,255,.92);
+}
+
+/* Modal form grid */
+.formGrid{ display:grid; gap:14px; }
+.formRow2{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+
+@media (max-width: 760px){
+  .formRow2{
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Toast */
+.toast{
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(47,107,255,.26);
+  background: rgba(47,107,255,.10);
+  color: rgba(255,255,255,.86);
+}
+
+/* Overview helpers */
+.seg{
+  display:inline-flex;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  border-radius: 16px;
+  padding: 4px;
+  gap: 4px;
+}
+.segBtn{
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,.70);
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 900;
+  transition: .16s ease;
+}
+.segBtn:hover{ background: rgba(255,255,255,.06); color: rgba(255,255,255,.92); }
+.segBtn.on{
+  background: linear-gradient(180deg, rgba(47,107,255,.26), rgba(47,107,255,.10));
+  border: 1px solid rgba(47,107,255,.35);
+  color: rgba(255,255,255,.95);
+  box-shadow: 0 12px 28px rgba(47,107,255,.14);
+}
+
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.82);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.divider{
+  height:1px;
+  width:100%;
+  background: rgba(255,255,255,.08);
+  margin: 12px 0;
+}
+
+.progressWrap{
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  overflow:hidden;
+}
+.progressBar{
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(47,107,255,.95), rgba(58,162,255,.55));
+}
+
+.chartWrap{
+  height: 240px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(900px 380px at 25% 0%, rgba(47,107,255,.14), transparent 60%),
+    rgba(255,255,255,.04);
+  overflow: hidden;
+  padding: 10px;
+}
+
+.chartHint{
+  font-size: 12px;
+  color: rgba(255,255,255,.60);
+  margin-top: 8px;
+}
+
+.muted{
+  color: rgba(255,255,255,.62);
+  font-size: 13px;
+}
+
+/* =========================
+   MOBILE-ONLY FIXES
+   ✅ logo + tabs on same row
+   ✅ smaller date filters
+   ✅ tables behave for “Outstanding” + “Credit”
+   (no desktop impact)
+   ========================= */
+
+@media (max-width: 760px){
+
+  /* tighter side padding */
+  .containerWide{ width: min(1320px, calc(100% - 28px)); }
+  .app-contentInner{ width: min(1280px, calc(100% - 28px)); }
+
+  /* -------------------------
+     NAV: logo + tabs SAME ROW
+     ------------------------- */
+  .topbarInner{
+    padding: 10px 0 !important;
+  }
+
+  /* navWrap becomes 2 columns: logo | tabs */
+  .navWrap{
+    display: grid !important;
+    grid-template-columns: 54px 1fr !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  /* Brand = icon only, keep it compact */
+  .brand{
+    min-width: 0 !important;
+    width: 54px !important;
+    justify-content: flex-start !important;
+  }
+  .brandName{ display:none !important; }
+
+  .brandMark{
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 16px !important;
+  }
+
+  /* Tabs = single row, swipeable */
+  .navTabs{
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none;
+    padding: 2px 0 6px !important;
+  }
+  .navTabs::-webkit-scrollbar{ display:none; }
+
+  .navBtn{
+    flex: 0 0 auto !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 10px !important;
+    justify-content: center !important;
+  }
+  .navBtn span{ display:none !important; }
+
+  /* remove spacer */
+  .navRight{ display:none !important; }
+
+  /* -------------------------
+     PAGE HEADER + FILTERS
+     - stack neatly
+     - make date inputs smaller
+     ------------------------- */
+  .pageHead{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .pageTitle{
+    font-size: 22px;
+    line-height: 1.1;
+  }
+
+  /* ✅ MOBILE: stack ALL filters full width */
+  .pageActions{
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+  }
+
+  /* ✅ stop children from sizing to content */
+  .pageActions > div{
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* ✅ inputs never exceed the screen */
+  .pageActions .input,
+  .pageActions input,
+  .pageActions select{
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* buttons also full width */
+  .pageActions button{
+    width: 100% !important;
+  }
+
+  /* ✅ Make filters smaller */
+  .pageActions label{
+    font-size: 12px;
+    opacity: .85;
+  }
+
+  .pageActions .input,
+  .pageActions input,
+  .pageActions select{
+    padding: 9px 10px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    min-height: 40px !important;
+  }
+
+  input[type="date"].input{
+    font-size: 13px !important;
+  }
+
+  /* grids stack */
+  .grid2, .grid3, .grid4{ grid-template-columns: 1fr !important; }
+
+  /* -------------------------
+     TABLES (general mobile baseline)
+     (final hard override is at bottom of file)
+     ------------------------- */
+  .tableWrap{
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* -------------------------
+     MODAL fits phones
+     ------------------------- */
+  .modalBackdrop{ padding: 10px; }
+  .modalBox{ width: 100%; max-height: calc(100vh - 20px); }
+  .modalFooter{ flex-direction: column; }
+  .modalFooter .btn{ width: 100%; }
+
+  /* tap targets */
+  .btn{ min-height: 44px; }
+}
+
+/* =========================
+   MOBILE TABLE OVERRIDE — FINAL HARD FIX
+   Put this at the VERY BOTTOM of App.css
+   ========================= */
+@media (max-width: 760px){
+
+  /* wrapper MUST scroll horizontally */
+  .tableWrap{
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    display: block !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* keep table as a real table, allow it to exceed container width */
+  .tableWrap > table{
+    width: max-content !important;      /* key */
+    min-width: 100% !important;         /* don’t shrink smaller than card */
+    border-collapse: collapse !important;
+  }
+
+  /* override inline widths from JSX */
+  .tableWrap th,
+  .tableWrap td{
+    width: auto !important;
+    white-space: nowrap !important;
+  }
+
+  /* truncate long text so it doesn't blow layout */
+  .tableWrap td{
+    max-width: 220px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* action column stays compact */
+  .tableWrap th:last-child,
+  .tableWrap td:last-child{
+    max-width: none !important;
+    white-space: nowrap !important;
+  }
+
+  /* smaller buttons inside tables on mobile */
+  .tableWrap .btn{
+    padding: 9px 10px !important;
+    min-height: 40px !important;
+    border-radius: 12px !important;
+  }
+
+  /* prevent random parent overflow from causing page-wide horizontal scroll */
+  .containerWide, .card, .section{
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+}
+/* =========================
+   MOBILE — Force filter fields to behave
+   Fixes From/To + any minWidth inline styles
+   ========================= */
+@media (max-width: 760px){
+
+  /* any filter block inside pageActions must be allowed to shrink */
+  .pageActions > div{
+    min-width: 0 !important;
+    width: 100% !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* any input/select inside pageActions must not exceed screen */
+  .pageActions input,
+  .pageActions select,
+  .pageActions .input{
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}
+/* =========================
+   MOBILE — fix date inputs that refuse to shrink
+   (Billing From/To, PricingModal Effective dates, Subscription start date, etc.)
+   ========================= */
+@media (max-width: 760px){
+  /* any inline-minWidth wrappers must be allowed to shrink */
+  .pageActions > div,
+  .formRow2 > div{
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  /* date inputs (and all inputs) must never overflow */
+  input[type="date"],
+  .pageActions input,
+  .pageActions select,
+  .pageActions .input,
+  .formRow2 input,
+  .formRow2 select,
+  .formRow2 .input{
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* iOS Safari: date field needs block + no weird sizing */
+  input[type="date"].input{
+    display: block !important;
+  }
+}@media (max-width: 760px){
+  /* force date inputs to shrink properly */
+  input[type="date"],
+  input[type="date"].input{
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: block !important;
+    box-sizing: border-box !important;
+  }
+
+  /* make filter blocks allowed to shrink */
+  .pageActions > div,
+  .filterField{
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
