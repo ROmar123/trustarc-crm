@@ -1,0 +1,28 @@
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "../lib/supabase";
+
+function SB({ s }) { const st = { active: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30", maintenance: "bg-amber-500/15 text-amber-400 border border-amber-500/30", pending: "bg-yellow-500/15 text-yellow-400 border border-yellow-500/30", retired: "bg-slate-500/15 text-slate-400 border border-slate-500/30" }; return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${st[s] || st.pending}`}>{s}</span>; }
+function ID({ d }) { if (!d) return <span className="w-2 h-2 rounded-full bg-slate-600 inline-block" />; const days = Math.ceil((new Date(d) - new Date()) / 86400000); const c = days < 30 ? "bg-red-500" : days < 60 ? "bg-amber-500" : "bg-emerald-500"; return <span className={`w-2 h-2 rounded-full ${c} inline-block`} title={`${days}d`} />; }
+
+export default function Vehicles({ setView, setContext }) {
+  const [items, setItems] = useState([]); const [loading, setLoading] = useState(true); const [search, setSearch] = useState(""); const [filter, setFilter] = useState("all");
+  useEffect(() => { load(); }, []);
+  async function load() { setLoading(true); const { data } = await supabase.from("vehicles").select("*, fleet_owners(company_name)").order("created_at", { ascending: false }); setItems(data || []); setLoading(false); }
+  async function updateStatus(id, status) { await supabase.from("vehicles").update({ status }).eq("id", id); load(); }
+  function goTo(id) { setContext({ vehicleId: id }); setView("vehicle_detail"); }
+  const filtered = useMemo(() => items.filter(v => { if (filter !== "all" && v.status !== filter) return false; const q = search.toLowerCase(); return !q || (v.registration_number || "").toLowerCase().includes(q) || (v.make || "").toLowerCase().includes(q); }), [items, search, filter]);
+  const counts = useMemo(() => { const c = { all: items.length, active: 0, maintenance: 0, pending: 0, retired: 0 }; items.forEach(v => { if (c[v.status] !== undefined) c[v.status]++; }); return c; }, [items]);
+
+  return (
+    <div className="max-w-6xl">
+      <div className="mb-4"><h1 className="text-2xl font-bold text-white">Vehicles</h1><p className="text-sm text-slate-400">Manage fleet vehicles and inspections</p></div>
+      <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-1 mb-4"><div className="flex gap-1 flex-wrap">{["all","active","maintenance","pending","retired"].map(s => (<button key={s} onClick={() => setFilter(s)} className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize transition ${filter === s ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-700/50"}`}>{s} <span className="ml-1 text-slate-500">{counts[s] || 0}</span></button>))}</div></div>
+      <input type="text" placeholder="Search by registration, make, model..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 mb-4" />
+      {loading ? <div className="text-center py-12 text-slate-400">Loading...</div> : filtered.length === 0 ? <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-12 text-center"><p className="text-slate-400">No vehicles</p></div> : (
+        <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 overflow-hidden"><div className="overflow-x-auto"><table className="w-full"><thead><tr className="border-b border-slate-700/50"><th className="text-left text-xs font-semibold text-slate-400 uppercase px-4 py-3">Registration</th><th className="text-left text-xs font-semibold text-slate-400 uppercase px-4 py-3">Vehicle</th><th className="text-left text-xs font-semibold text-slate-400 uppercase px-4 py-3">Class</th><th className="text-left text-xs font-semibold text-slate-400 uppercase px-4 py-3">Inspection</th><th className="text-left text-xs font-semibold text-slate-400 uppercase px-4 py-3">Fleet</th><th className="text-left text-xs font-semibold text-slate-400 uppercase px-4 py-3">Status</th><th className="text-right text-xs font-semibold text-slate-400 uppercase px-4 py-3">Actions</th></tr></thead><tbody className="divide-y divide-slate-700/30">
+          {filtered.map(v => (<tr key={v.id} className="hover:bg-slate-700/20 transition"><td className="px-4 py-3 text-sm text-white font-medium cursor-pointer" onClick={() => goTo(v.id)}>{v.registration_number}</td><td className="px-4 py-3 text-sm text-slate-300">{v.make} {v.model} {v.year}</td><td className="px-4 py-3 text-sm text-slate-300 capitalize">{v.vehicle_class}</td><td className="px-4 py-3 text-sm text-slate-300"><ID d={v.next_inspection_due} /> {v.next_inspection_due ? new Date(v.next_inspection_due).toLocaleDateString() : "—"}</td><td className="px-4 py-3 text-sm text-slate-300">{v.fleet_owners?.company_name || "—"}</td><td className="px-4 py-3"><SB s={v.status} /></td><td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-1">{v.status === "active" && <button onClick={() => updateStatus(v.id, "maintenance")} className="text-xs bg-amber-500/20 text-amber-400 px-2 py-1 rounded">Maint.</button>}{v.status === "maintenance" && <button onClick={() => updateStatus(v.id, "active")} className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">Activate</button>}<button onClick={() => goTo(v.id)} className="text-slate-500 hover:text-white text-xs">View</button></div></td></tr>))}
+        </tbody></table></div></div>
+      )}
+    </div>
+  );
+}

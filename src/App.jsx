@@ -10,6 +10,17 @@ import Subscriptions from "./pages/Subscriptions.jsx";
 import SubscriptionDetails from "./pages/SubscriptionDetails.jsx";
 import Billing from "./pages/Billing.jsx";
 import InvoiceView from "./pages/InvoiceView.jsx";
+import FleetOwners from "./pages/FleetOwners.jsx";
+import FleetOwnerDetail from "./pages/FleetOwnerDetail.jsx";
+import Drivers from "./pages/Drivers.jsx";
+import DriverDetail from "./pages/DriverDetail.jsx";
+import Vehicles from "./pages/Vehicles.jsx";
+import VehicleDetail from "./pages/VehicleDetail.jsx";
+import Trips from "./pages/Trips.jsx";
+import Bookings from "./pages/Bookings.jsx";
+import BookingDetail from "./pages/BookingDetail.jsx";
+import Documents from "./pages/Documents.jsx";
+import WorkItems from "./pages/WorkItems.jsx";
 
 export default function App() {
   const [view, setView] = useState("overview");
@@ -51,6 +62,50 @@ export default function App() {
         <InvoiceView setView={setView} setContext={setContext} context={context} />
       )}
 
+      {view === "fleet-owners" && (
+        <FleetOwners setView={setView} setContext={setContext} context={context} />
+      )}
+
+      {view === "fleet_owner_detail" && (
+        <FleetOwnerDetail setView={setView} setContext={setContext} context={context} />
+      )}
+
+      {view === "drivers" && (
+        <Drivers setView={setView} setContext={setContext} context={context} />
+      )}
+
+      {view === "driver_detail" && (
+        <DriverDetail setView={setView} setContext={setContext} context={context} />
+      )}
+
+      {view === "vehicles" && (
+        <Vehicles setView={setView} setContext={setContext} context={context} />
+      )}
+
+      {view === "vehicle_detail" && (
+        <VehicleDetail setView={setView} setContext={setContext} context={context} />
+      )}
+
+      {view === "trips" && (
+        <Trips setView={setView} setContext={setContext} context={context} />
+      )}
+
+      {view === "bookings" && (
+        <Bookings setView={setView} setContext={setContext} context={context} />
+      )}
+
+      {view === "booking_detail" && (
+        <BookingDetail setView={setView} setContext={setContext} context={context} />
+      )}
+
+      {view === "documents" && (
+        <Documents setView={setView} setContext={setContext} context={context} />
+      )}
+
+      {view === "work-items" && (
+        <WorkItems setView={setView} setContext={setContext} context={context} />
+      )}
+
       {/* fallback */}
       {![
         "overview",
@@ -62,6 +117,17 @@ export default function App() {
         "subscription_details",
         "billing",
         "invoice",
+        "fleet-owners",
+        "fleet_owner_detail",
+        "drivers",
+        "driver_detail",
+        "vehicles",
+        "vehicle_detail",
+        "trips",
+        "bookings",
+        "booking_detail",
+        "documents",
+        "work-items",
       ].includes(view) && <Overview setView={setView} setContext={setContext} />}
     </AppShell>
   );

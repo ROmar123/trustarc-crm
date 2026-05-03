@@ -2,9 +2,16 @@ export default function NavBar({ view, setView }) {
   const tabs = [
     { key: "overview", label: "Overview", icon: IconGrid },
     { key: "customers", label: "Customers", icon: IconUsers },
+    { key: "fleet-owners", label: "Fleet", icon: IconTruck },
+    { key: "drivers", label: "Drivers", icon: IconDriver },
+    { key: "vehicles", label: "Vehicles", icon: IconCar },
     { key: "routes", label: "Routes", icon: IconRoute },
+    { key: "trips", label: "Trips", icon: IconCalendar },
+    { key: "bookings", label: "Bookings", icon: IconTicket },
     { key: "subscriptions", label: "Subscriptions", icon: IconLayers },
     { key: "billing", label: "Billing", icon: IconInvoice },
+    { key: "documents", label: "Documents", icon: IconFileCheck },
+    { key: "work-items", label: "Tasks", icon: IconClipboard },
   ];
 
   return (
@@ -55,6 +62,70 @@ function IconMark() {
 }
 
 /* ---------- Icons ---------- */
+function IconTruck() {
+  return (
+    <svg className="ico" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="7" width="15" height="10" rx="1" stroke="currentColor" strokeWidth="2"/>
+      <path d="M18 11h2a1 1 0 011 1v4a1 1 0 01-1 1h-2" stroke="currentColor" strokeWidth="2"/>
+      <circle cx="7.5" cy="17.5" r="1.5" stroke="currentColor" strokeWidth="2"/>
+      <circle cx="17.5" cy="17.5" r="1.5" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+}
+function IconDriver() {
+  return (
+    <svg className="ico" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="7" r="3" stroke="currentColor" strokeWidth="2"/>
+      <path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.4"/>
+    </svg>
+  );
+}
+function IconCar() {
+  return (
+    <svg className="ico" viewBox="0 0 24 24" fill="none">
+      <path d="M5 10l2-5h10l2 5v8a1 1 0 01-1 1H6a1 1 0 01-1-1v-8z" stroke="currentColor" strokeWidth="2"/>
+      <circle cx="7.5" cy="17.5" r="1.5" stroke="currentColor" strokeWidth="2"/>
+      <circle cx="16.5" cy="17.5" r="1.5" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+}
+function IconCalendar() {
+  return (
+    <svg className="ico" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+      <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+function IconTicket() {
+  return (
+    <svg className="ico" viewBox="0 0 24 24" fill="none">
+      <path d="M3 10v4a1 1 0 001 1h1.5a2 2 0 010 4H4a1 1 0 01-1-1v-8" stroke="currentColor" strokeWidth="2"/>
+      <path d="M21 10v8a1 1 0 01-1 1h-1.5a2 2 0 010-4H20a1 1 0 001-1v-4" stroke="currentColor" strokeWidth="2"/>
+      <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2"/>
+      <line x1="12" y1="10" x2="12" y2="22" stroke="currentColor" strokeWidth="2" strokeDasharray="2 2"/>
+    </svg>
+  );
+}
+function IconFileCheck() {
+  return (
+    <svg className="ico" viewBox="0 0 24 24" fill="none">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" strokeWidth="2"/>
+      <path d="M14 2v6h6" stroke="currentColor" strokeWidth="2"/>
+      <path d="M9 15l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function IconClipboard() {
+  return (
+    <svg className="ico" viewBox="0 0 24 24" fill="none">
+      <path d="M9 5h6M9 5a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2" stroke="currentColor" strokeWidth="2"/>
+      <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="2"/>
+      <path d="M9 12h6M9 16h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+}
 function IconGrid() {
   return (
     <svg className="ico" viewBox="0 0 24 24" fill="none">

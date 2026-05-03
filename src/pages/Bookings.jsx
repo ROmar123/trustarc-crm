@@ -1,0 +1,30 @@
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "../lib/supabase";
+
+function SB({ s }) {
+  const st = { draft: "bg-slate-500/15 text-slate-400 border border-slate-500/30", hold: "bg-amber-500/15 text-amber-400 border border-amber-500/30", confirmed: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30", checked_in: "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30", completed: "bg-blue-500/15 text-blue-400 border border-blue-500/30", cancelled: "bg-red-500/15 text-red-400 border border-red-500/30", no_show: "bg-rose-500/15 text-rose-400 border border-rose-500/30" };
+  return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${st[s] || st.draft}`}>{s?.replace("_", " ")}</span>;
+}
+
+export default function Bookings({ setView, setContext }) {
+  const [items, setItems] = useState([]); const [loading, setLoading] = useState(true); const [search, setSearch] = useState(""); const [filter, setFilter] = useState("all");
+  useEffect(() => { load(); }, []);
+  async function load() { setLoading(true); const { data } = await supabase.from("bookings").select("*, customers(display_name, email), trips(trip_date, routes(route_name))").order("created_at", { ascending: false }); setItems(data || []); setLoading(false); }
+  async function updateStatus(id, status) { const up = { status }; if (status === "checked_in") up.checked_in_at = new Date().toISOString(); if (status === "completed") up.completed_at = new Date().toISOString(); if (status === "cancelled") up.cancelled_at = new Date().toISOString(); await supabase.from("bookings").update(up).eq("id", id); load(); }
+  function goTo(id) { setContext({ bookingId: id }); setView("booking_detail"); }
+  const filtered = useMemo(() => items.filter(b => { if (filter !== "all" && b.status !== filter) return false; const q = search.toLowerCase(); return !q || (b.booking_number || "").toLowerCase().includes(q) || (b.customers?.display_name || "").toLowerCase().includes(q); }), [items, search, filter]);
+  const counts = useMemo(() => { const c = { all: items.length, draft: 0, hold: 0, confirmed: 0, checked_in: 0, completed: 0, cancelled: 0 }; items.forEach(b => { if (c[b.status] !== undefined) c[b.status]++; }); return c; }, [items]);
+
+  return (
+    <div className="max-w-6xl">
+      <div className="mb-4"><h1 className="text-2xl font-bold text-white">Bookings</h1><p className="text-sm text-slate-400">Manage reservations and lifecycle</p></div>
+      <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-1 mb-4"><div className="flex gap-1 flex-wrap">{["all","draft","hold","confirmed","checked_in","completed","cancelled"].map(s => (<button key={s} onClick={() => setFilter(s)} className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize transition ${filter === s ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white hover:bg-slate-700/50"}`}>{s.replace("_", " ")} <span className="ml-1 text-slate-500">{counts[s] || 0}</span></button>))}</div></div>
+      <input type="text" placeholder="Search bookings..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 mb-4" />
+      {loading ? <div className="text-center py-12 text-slate-400">Loading...</div> : filtered.length === 0 ? <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-12 text-center"><p className="text-slate-400">No bookings</p></div> : (
+        <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 overflow-hidden"><div className="overflow-x-auto"><table className="w-full"><thead><tr className="border-b border-slate-700/50"><th className="text-left text-xs font-semibold text-slate-400 uppercase px-4 py-3">Booking #</th><th className="text-left text-xs font-semibold text-slate-400 uppercase px-4 py-3">Customer</th><th className="text-left text-xs font-semibold text-slate-400 uppercase px-4 py-3">Route</th><th className="text-left text-xs font-semibold text-slate-400 uppercase px-4 py-3">Seats</th><th className="text-left text-xs font-semibold text-slate-400 uppercase px-4 py-3">Amount</th><th className="text-left text-xs font-semibold text-slate-400 uppercase px-4 py-3">Status</th><th className="text-right text-xs font-semibold text-slate-400 uppercase px-4 py-3">Actions</th></tr></thead><tbody className="divide-y divide-slate-700/30">
+          {filtered.map(b => (<tr key={b.id} className="hover:bg-slate-700/20 transition"><td className="px-4 py-3 text-sm text-white font-medium cursor-pointer" onClick={() => goTo(b.id)}>{b.booking_number}</td><td className="px-4 py-3"><p className="text-sm text-white">{b.customers?.display_name || "—"}</p></td><td className="px-4 py-3 text-sm text-slate-300">{b.trips?.routes?.route_name || "—"}</td><td className="px-4 py-3 text-sm text-slate-300">{b.seats_booked}</td><td className="px-4 py-3 text-sm text-slate-300">R{b.final_amount || b.total_amount}</td><td className="px-4 py-3"><SB s={b.status} /></td><td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-1">{b.status === "hold" && <button onClick={() => updateStatus(b.id, "confirmed")} className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">Confirm</button>}{b.status === "confirmed" && <button onClick={() => updateStatus(b.id, "checked_in")} className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-1 rounded">Check In</button>}{b.status === "checked_in" && <button onClick={() => updateStatus(b.id, "completed")} className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">Complete</button>}{(b.status === "draft" || b.status === "hold") && <button onClick={() => updateStatus(b.id, "cancelled")} className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">Cancel</button>}</div></td></tr>))}
+        </tbody></table></div></div>
+      )}
+    </div>
+  );
+}
