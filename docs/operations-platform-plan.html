@@ -1,0 +1,1581 @@
+<title>TrustArc — Operations Platform Plan</title>
+
+<style>
+  :root {
+    --paper:    #EDEFEA;
+    --surface:  #F7F8F5;
+    --surface2: #E3E7DF;
+    --ink:      #14201E;
+    --ink-soft: #33423E;
+    --muted:    #5C6A64;
+    --rule:     #D2D8CE;
+    --rule-soft:#E0E4DB;
+    --accent:   #9A6608;
+    --accent-b: #B0740A;
+
+    --line-1: #2F4B9B;
+    --line-2: #0E7A6B;
+    --line-3: #A97009;
+    --line-4: #A63F2A;
+    --line-5: #6B4B8A;
+
+    --critical: #9E2E1E;
+    --warn:     #96650B;
+    --good:     #196B47;
+    --crit-bg:  #F4DED9;
+    --warn-bg:  #F5E7CC;
+    --good-bg:  #D9EBE1;
+
+    --sans: "Helvetica Neue", Helvetica, Arial, ui-sans-serif, system-ui, sans-serif;
+    --serif: ui-serif, Charter, "Iowan Old Style", Georgia, "Times New Roman", serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+    --measure: 68ch;
+    --pad: clamp(1.25rem, 4vw, 3.5rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:    #101817;
+      --surface:  #17211F;
+      --surface2: #1F2B29;
+      --ink:      #E7EBE6;
+      --ink-soft: #C2CCC6;
+      --muted:    #8FA098;
+      --rule:     #2B3835;
+      --rule-soft:#222E2C;
+      --accent:   #E0A63C;
+      --accent-b: #EFBB58;
+
+      --line-1: #7C97DF;
+      --line-2: #3FB8A3;
+      --line-3: #D9A23C;
+      --line-4: #DE7A5F;
+      --line-5: #A98BC7;
+
+      --critical: #E98A76;
+      --warn:     #D9A23C;
+      --good:     #55C08C;
+      --crit-bg:  #35211C;
+      --warn-bg:  #33280F;
+      --good-bg:  #142C22;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:    #101817;
+    --surface:  #17211F;
+    --surface2: #1F2B29;
+    --ink:      #E7EBE6;
+    --ink-soft: #C2CCC6;
+    --muted:    #8FA098;
+    --rule:     #2B3835;
+    --rule-soft:#222E2C;
+    --accent:   #E0A63C;
+    --accent-b: #EFBB58;
+    --line-1: #7C97DF;
+    --line-2: #3FB8A3;
+    --line-3: #D9A23C;
+    --line-4: #DE7A5F;
+    --line-5: #A98BC7;
+    --critical: #E98A76;
+    --warn:     #D9A23C;
+    --good:     #55C08C;
+    --crit-bg:  #35211C;
+    --warn-bg:  #33280F;
+    --good-bg:  #142C22;
+  }
+
+  :root[data-theme="light"] {
+    --paper:    #EDEFEA;
+    --surface:  #F7F8F5;
+    --surface2: #E3E7DF;
+    --ink:      #14201E;
+    --ink-soft: #33423E;
+    --muted:    #5C6A64;
+    --rule:     #D2D8CE;
+    --rule-soft:#E0E4DB;
+    --accent:   #9A6608;
+    --accent-b: #B0740A;
+    --line-1: #2F4B9B;
+    --line-2: #0E7A6B;
+    --line-3: #A97009;
+    --line-4: #A63F2A;
+    --line-5: #6B4B8A;
+    --critical: #9E2E1E;
+    --warn:     #96650B;
+    --good:     #196B47;
+    --crit-bg:  #F4DED9;
+    --warn-bg:  #F5E7CC;
+    --good-bg:  #D9EBE1;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 1rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 var(--pad); }
+
+  h1, h2, h3, h4, .sans { font-family: var(--sans); }
+
+  h2 {
+    font-size: clamp(1.5rem, 3.4vw, 2.125rem);
+    line-height: 1.1;
+    letter-spacing: -0.026em;
+    font-weight: 700;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-size: clamp(1.125rem, 2vw, 1.3125rem);
+    line-height: 1.22;
+    letter-spacing: -0.014em;
+    font-weight: 700;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  h4 {
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  p { margin: 0; max-width: var(--measure); }
+  strong { font-weight: 700; color: var(--ink); }
+
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-b);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  code, .mono { font-family: var(--mono); font-size: 0.875em; }
+
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .lede {
+    font-size: clamp(1.0625rem, 1.7vw, 1.1875rem);
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+
+  .stack   { display: flex; flex-direction: column; gap: 1rem; }
+  .stack-s { display: flex; flex-direction: column; gap: 0.5rem; }
+  .stack-l { display: flex; flex-direction: column; gap: 1.75rem; }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    border-bottom: 1px solid var(--rule);
+    background: var(--surface);
+  }
+
+  .masthead-in {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding-top: clamp(2.5rem, 6vw, 4.5rem);
+    padding-bottom: clamp(2rem, 4vw, 3rem);
+  }
+
+  .wordmark {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+  }
+
+  .wordmark b {
+    font-family: var(--sans);
+    font-size: clamp(2.25rem, 7vw, 4.25rem);
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+  }
+
+  .wordmark span {
+    font-family: var(--sans);
+    font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .rule-accent {
+    height: 5px;
+    width: 100%;
+    background: linear-gradient(90deg,
+      var(--line-1) 0 20%, var(--line-2) 20% 40%,
+      var(--line-3) 40% 60%, var(--line-4) 60% 80%,
+      var(--line-5) 80% 100%);
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+
+  .board-cell {
+    background: var(--surface);
+    padding: 0.95rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .board-cell .n {
+    font-family: var(--sans);
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .board-cell .k {
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.35;
+  }
+
+  .n.is-crit { color: var(--critical); }
+  .n.is-warn { color: var(--warn); }
+
+  /* ---------- sections ---------- */
+
+  section { padding-top: clamp(3rem, 7vw, 5rem); }
+  section:last-of-type { padding-bottom: clamp(3.5rem, 8vw, 6rem); }
+
+  .sec-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    padding-bottom: 1.75rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .sec-num {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .sec-num i {
+    font-style: normal;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 0.15rem 0.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* ---------- callout ---------- */
+
+  .callout {
+    border-left: 4px solid var(--critical);
+    background: var(--crit-bg);
+    padding: 1.15rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .callout.is-warn { border-left-color: var(--warn); background: var(--warn-bg); }
+  .callout.is-good { border-left-color: var(--good); background: var(--good-bg); }
+  .callout p { max-width: 76ch; font-size: 0.9375rem; }
+
+  /* ---------- tables ---------- */
+
+  .tbl-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--rule);
+    background: var(--surface);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    min-width: 640px;
+  }
+
+  thead th {
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    text-align: left;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 0.65rem 0.9rem;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 0.75rem 0.9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:nth-child(even) { background: var(--paper); }
+
+  td.num, th.num {
+    text-align: right;
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  td.code { font-family: var(--mono); font-size: 0.8125rem; white-space: nowrap; }
+
+  /* ---------- chips ---------- */
+
+  .chip {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.45rem;
+    white-space: nowrap;
+    border: 1px solid;
+  }
+
+  .chip.crit { color: var(--critical); background: var(--crit-bg); border-color: var(--critical); }
+  .chip.warn { color: var(--warn);     background: var(--warn-bg); border-color: var(--warn); }
+  .chip.good { color: var(--good);     background: var(--good-bg); border-color: var(--good); }
+  .chip.none { color: var(--muted);    background: transparent;    border-color: var(--rule); }
+
+  /* ---------- cards ---------- */
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.25rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+
+  .card {
+    border: 1px solid var(--rule);
+    background: var(--surface);
+    padding: 1.25rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .card p { font-size: 0.9375rem; color: var(--ink-soft); }
+
+  /* ---------- code ---------- */
+
+  .code-block {
+    overflow-x: auto;
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    padding: 1.15rem 1.35rem;
+  }
+
+  .code-block pre {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 0.8125rem;
+    line-height: 1.65;
+    color: #DCE4DF;
+    white-space: pre;
+  }
+
+  .code-block .c { color: #7E948C; font-style: italic; }
+  .code-block .k { color: #E0A63C; }
+  .code-block .t { color: #7FC8B6; }
+
+  /* ---------- route diagram ---------- */
+
+  .journey { border: 1px solid var(--rule); background: var(--surface); }
+
+  .journey-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.2rem 1.35rem;
+    border-bottom: 1px solid var(--rule);
+    background: var(--surface2);
+  }
+
+  .journey-badge {
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: var(--jline);
+    padding: 0.3rem 0.6rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    line-height: 1.3;
+  }
+
+  .journey-head .who {
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  .line {
+    list-style: none;
+    margin: 0;
+    padding: 1.5rem 1.35rem 1.6rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .stop {
+    position: relative;
+    padding-left: 2.6rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .stop:last-child { padding-bottom: 0; }
+
+  /* the running line */
+  .stop::before {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    top: 0.55rem;
+    bottom: -0.35rem;
+    width: 4px;
+    background: var(--jline);
+  }
+
+  .stop:last-child::before { display: none; }
+
+  /* the station node */
+  .stop::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.3rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: var(--jline);
+    border: 3px solid var(--surface);
+    box-shadow: 0 0 0 1px var(--jline);
+  }
+
+  /* interchange node — hollow ring */
+  .stop.interchange::after {
+    background: var(--surface);
+    border: 4px solid var(--jline);
+    box-shadow: none;
+  }
+
+  /* terminus node — square */
+  .stop.terminus::after {
+    border-radius: 1px;
+    background: var(--jline);
+    border: 3px solid var(--surface);
+  }
+
+  .stop h4 { margin-bottom: 0.3rem; }
+
+  .stop .detail {
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+    max-width: 74ch;
+  }
+
+  .stop .sys {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.45rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 0.22rem 0.5rem;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding: 1rem 1.35rem;
+    border: 1px solid var(--rule);
+    background: var(--surface2);
+    align-items: center;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .lg-node { width: 1rem; height: 1rem; border-radius: 50%; background: var(--ink); flex-shrink: 0; }
+  .lg-node.ring { background: transparent; border: 3px solid var(--ink); }
+  .lg-node.sq { border-radius: 1px; }
+
+  /* ---------- phases ---------- */
+
+  .phase {
+    display: grid;
+    grid-template-columns: minmax(0, 8.5rem) 1fr;
+    gap: 1.5rem;
+    padding: 1.35rem 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: start;
+  }
+
+  .phase:last-child { border-bottom: 0; }
+
+  .phase-when {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .phase-when b {
+    font-family: var(--sans);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  .phase-when span {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .phase ul { margin: 0.5rem 0 0 0; padding-left: 1.1rem; }
+  .phase li { font-size: 0.9375rem; color: var(--ink-soft); margin-bottom: 0.3rem; }
+  .phase li::marker { color: var(--accent); }
+
+  @media (max-width: 620px) {
+    .phase { grid-template-columns: 1fr; gap: 0.6rem; }
+  }
+
+  /* ---------- footer ---------- */
+
+  footer {
+    border-top: 2px solid var(--ink);
+    background: var(--surface);
+    padding: 2.5rem 0 3.5rem;
+  }
+
+  .ask {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr;
+    gap: 0.9rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: baseline;
+  }
+
+  .ask:last-child { border-bottom: 0; }
+
+  .ask i {
+    font-style: normal;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .ask p { font-size: 0.9375rem; max-width: 76ch; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="masthead">
+  <div class="rule-accent"></div>
+  <div class="wrap masthead-in">
+    <div class="stack">
+      <div class="wordmark">
+        <b>TrustArc</b>
+        <span>Operations Platform &nbsp;/&nbsp; Build Plan</span>
+      </div>
+      <p class="lede">
+        An audit of the system as it stands today, the gap to a business you can actually
+        run on it, a fare model that handles prices that range, and the end-to-end flow
+        for every journey a customer takes through it.
+      </p>
+    </div>
+
+    <div class="board">
+      <div class="board-cell">
+        <span class="n">7,519</span>
+        <span class="k">Lines audited</span>
+      </div>
+      <div class="board-cell">
+        <span class="n is-crit">9</span>
+        <span class="k">Pages that render broken</span>
+      </div>
+      <div class="board-cell">
+        <span class="n is-crit">0</span>
+        <span class="k">Auth checks in the codebase</span>
+      </div>
+      <div class="board-cell">
+        <span class="n is-warn">1</span>
+        <span class="k">Price per route, per period</span>
+      </div>
+      <div class="board-cell">
+        <span class="n is-crit">3</span>
+        <span class="k">Tables nothing ever writes to</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ 1. AUDIT ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num"><i>01</i><span class="eyebrow">The audit</span></div>
+      <h2>What you actually have today</h2>
+      <p class="lede">A React&nbsp;19 + Vite front-end talking straight to Supabase. No server, no auth,
+      no billing engine. The older half works. The newer half was written against a different
+      set of conventions and does not run.</p>
+    </div>
+
+    <div class="stack-l">
+
+      <div class="callout">
+        <h4>Two things I could not see, and you should know it</h4>
+        <p><strong>Your live database.</strong> The <code>.env</code> points at Supabase project
+        <code>atcynqooxmwcuifzwbue</code>, but the Supabase account connected to this session
+        belongs to a different organisation. Every query returns <em>permission denied</em>.
+        Nothing below is based on your real data — it is read off the code and the two
+        <code>.sql</code> files in the repo.</p>
+        <p><strong>Your live site.</strong> <code>trustarc.co.za</code> is blocked by this
+        environment's network policy, so I could not review what you currently promise
+        customers, which routes you sell, or what you charge.</p>
+      </div>
+
+      <div class="stack">
+        <h3>Defects in the current build</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:6.5rem">Severity</th>
+                <th>What is wrong</th>
+                <th>What it costs you</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="chip crit">Critical</span></td>
+                <td><strong>No authentication anywhere.</strong> Zero <code>supabase.auth</code>
+                calls in 7,519 lines. The anon key ships in the browser bundle and there is no
+                sign of row-level security.</td>
+                <td>Anyone who finds the URL can read and edit every customer, invoice and
+                payment you hold. Under POPIA that is a reportable breach, not a bug.</td>
+              </tr>
+              <tr>
+                <td><span class="chip crit">Critical</span></td>
+                <td><strong>Tailwind is not installed.</strong> It appears nowhere in
+                <code>package.json</code> and there is no module on disk — yet Trips, Bookings,
+                Vehicles, Drivers, Documents, Work Items, Fleet Owners and both detail pages are
+                written entirely in Tailwind utility classes.</td>
+                <td>Nine pages render as unstyled raw HTML. The entire operations half of the
+                app is visually broken.</td>
+              </tr>
+              <tr>
+                <td><span class="chip crit">Critical</span></td>
+                <td><strong>Primary-key mismatch.</strong> Those same pages query
+                <code>.eq("id",&nbsp;id)</code>, but the schema uses <code>trip_id</code>,
+                <code>vehicle_id</code>, <code>booking_id</code>, <code>driver_id</code>.</td>
+                <td>Every status button — Board, Depart, Confirm, Check&nbsp;In, Approve — is a
+                silent no-op. Detail pages cannot load a record. React keys are all
+                <code>undefined</code>.</td>
+              </tr>
+              <tr>
+                <td><span class="chip crit">Critical</span></td>
+                <td><strong>Ghost tables.</strong> <code>accounts_receivable</code>,
+                <code>customer_credit</code> and <code>invoices_to_email</code> are plain tables,
+                not views. Nothing in the codebase ever inserts into them.</td>
+                <td>Billing and the Overview dashboard read balances from tables that stay empty
+                forever. Your headline KPIs are structurally zero and always will be.</td>
+              </tr>
+              <tr>
+                <td><span class="chip warn">High</span></td>
+                <td><strong>No recurring billing.</strong> <code>createInvoice</code> is manual
+                only. Nothing walks <code>subscriptions.next_period_start</code> and raises the
+                next invoice.</td>
+                <td>Subscriptions never bill themselves. Someone raises every invoice by hand,
+                every month, forever.</td>
+              </tr>
+              <tr>
+                <td><span class="chip warn">High</span></td>
+                <td><strong>No document numbering.</strong> <code>invoice_number</code> has no
+                default, no sequence and no unique constraint. <code>booking_number</code> is
+                unique but has no generator.</td>
+                <td>Duplicate or missing invoice numbers. SARS requires a tax invoice to carry a
+                unique sequential number — this cannot satisfy that.</td>
+              </tr>
+              <tr>
+                <td><span class="chip warn">High</span></td>
+                <td><strong>No VAT anywhere.</strong> No tax rate, tax amount or
+                inclusive/exclusive flag on invoices or lines.</td>
+                <td>Once you cross the R1m turnover threshold you cannot issue a valid tax
+                invoice, and you cannot restate history.</td>
+              </tr>
+              <tr>
+                <td><span class="chip warn">Medium</span></td>
+                <td><strong>Seat counts are loose integers.</strong> <code>trips.seats_occupied</code>
+                is a plain column with no ledger and no constraint against
+                <code>seats_available</code>.</td>
+                <td>Two concurrent bookings can both read 13/14 and both write 14/14. You will
+                oversell seats and find out at the kerb.</td>
+              </tr>
+              <tr>
+                <td><span class="chip none">Low</span></td>
+                <td><strong>Swapped files.</strong> <code>PricingModal.jsx</code> exports
+                <code>SubscriptionModal</code>; <code>SubscriptionModal.jsx</code> exports
+                <code>PricingModal</code>.</td>
+                <td>Harmless today, confusing forever. A two-minute fix.</td>
+              </tr>
+              <tr>
+                <td><span class="chip none">Low</span></td>
+                <td><strong>Navigation is <code>useState</code>, not routing.</strong>
+                <code>react-router-dom</code> is installed but unused — <code>App.jsx</code> is a
+                20-branch string switch.</td>
+                <td>No deep links, no back button, no shareable "open this invoice" URL.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="stack">
+        <h3>Coverage against the business you described</h3>
+        <p>You named twelve things you need to run. Here is where each one actually sits.</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Domain</th>
+                <th style="width:7.5rem">State</th>
+                <th>The honest assessment</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Customers</strong></td><td><span class="chip good">Works</span></td>
+                <td>List, detail, create and edit are solid. Missing: company parent accounts, named
+                passengers under an account, and any concept of a login.</td></tr>
+              <tr><td><strong>Routes</strong></td><td><span class="chip good">Works</span></td>
+                <td>Good page with map coordinates. Missing: intermediate stops, zones, and a
+                timetable to generate trips from.</td></tr>
+              <tr><td><strong>Subscriptions</strong></td><td><span class="chip warn">Partial</span></td>
+                <td>Creates and lists correctly, resolves price client-side. But it binds to a route,
+                not to a plan — see section&nbsp;03. No pause, upgrade, downgrade or pro-rata.</td></tr>
+              <tr><td><strong>Invoices</strong></td><td><span class="chip warn">Partial</span></td>
+                <td>Manual create, lines, PDF view. No numbering, no VAT, no automatic run, no
+                credit notes.</td></tr>
+              <tr><td><strong>Payments</strong></td><td><span class="chip warn">Partial</span></td>
+                <td>Record-a-payment and allocate-to-invoice exist. No gateway, no debit orders,
+                no reconciliation, no receipts.</td></tr>
+              <tr><td><strong>Vehicles</strong></td><td><span class="chip crit">Broken</span></td>
+                <td>Page exists but is unstyled and its actions do not save.</td></tr>
+              <tr><td><strong>Drivers</strong></td><td><span class="chip crit">Broken</span></td>
+                <td>Same. Licence and medical expiry fields are there but nothing watches them.</td></tr>
+              <tr><td><strong>Trips</strong></td><td><span class="chip crit">Broken</span></td>
+                <td>Same. And trips must be created by hand — no schedule generates them.</td></tr>
+              <tr><td><strong>Bookings / once-off</strong></td><td><span class="chip crit">Broken</span></td>
+                <td>Same. <code>hold_expiry</code> exists but nothing ever expires a hold.</td></tr>
+              <tr><td><strong>Capacity</strong></td><td><span class="chip crit">Missing</span></td>
+                <td>Two integers on a row. No ledger, no reservation of subscriber seats against
+                future trips, no oversell protection. This is the hardest unsolved problem here.</td></tr>
+              <tr><td><strong>Fleet owners / payouts</strong></td><td><span class="chip crit">Missing</span></td>
+                <td>Table and a broken page. For your mixed model there is no cost, commission or
+                payout concept at all.</td></tr>
+              <tr><td><strong>Customer portal</strong></td><td><span class="chip crit">Missing</span></td>
+                <td>Nothing customer-facing exists. Every interaction runs through your staff.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 2. SHAPE ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num"><i>02</i><span class="eyebrow">Target architecture</span></div>
+      <h2>What it needs to become</h2>
+      <p class="lede">The current design puts every business rule in the browser. Pricing is resolved
+      in React, seat counts are written from React, and there is nothing to stop a determined
+      person writing whatever they like. The fix is to move the rules behind the database.</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <span class="eyebrow">Layer 01</span>
+        <h3>Postgres holds the truth</h3>
+        <p>Fare bands, seat availability, invoice totals and document numbers become constraints,
+        generated columns and exclusion indexes — not conventions. If a rule matters, the database
+        refuses to break it, regardless of what calls it.</p>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Layer 02</span>
+        <h3>Row-level security, from day one</h3>
+        <p>Staff roles see the back office. A customer sees their own account and nothing else.
+        A subcontracted operator sees their own vehicles, drivers and trips — never your
+        customer list or your margins.</p>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Layer 03</span>
+        <h3>Scheduled jobs do the repetitive work</h3>
+        <p>Edge functions on a schedule: materialise next month's trips from the timetable, raise
+        the billing run, expire stale seat holds, chase overdue accounts, flag licences and
+        inspections before they lapse.</p>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Layer 04</span>
+        <h3>Two front ends, one schema</h3>
+        <p>The back office you already have, repaired and routed properly. Plus a thin customer
+        portal for self-service sign-up, payment and manage-my-seat — the thing that stops your
+        team being the only interface to the business.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3. PRICING ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num"><i>03</i><span class="eyebrow">The fare model</span></div>
+      <h2>Many prices on one route</h2>
+      <p class="lede">This is the centre of what you asked for, and the thing the current schema
+      cannot do at all.</p>
+    </div>
+
+    <div class="stack-l">
+
+      <div class="stack">
+        <h3>Why it does not work today</h3>
+        <p>The entire pricing model is four columns:</p>
+        <div class="code-block"><pre><span class="k">route_pricing</span> (route_id, weekly_price, monthly_price, effective_from, effective_to)
+<span class="k">subscriptions</span> (…, price_override numeric)</pre></div>
+        <p>That is <strong>exactly one weekly price and one monthly price per route, per date
+        window</strong>. Two prices cannot be live on the same route at the same time. So when your
+        prices range, the only place that variation can go is <code>price_override</code> — a bare
+        number typed onto each subscription, attached to no named plan.</p>
+        <div class="callout is-warn">
+          <h4>What that costs you in practice</h4>
+          <p>You cannot answer "how many riders are on the R1,650 rate?" You cannot raise prices for
+          new customers while protecting existing ones. You cannot see that a staff member sold a
+          seat R400 under the floor. And when you change <code>route_pricing</code>, every historical
+          invoice silently re-prices, because the price was never stored on the subscription — only
+          resolved from the route at read time.</p>
+        </div>
+      </div>
+
+      <div class="stack">
+        <h3>The model that replaces it</h3>
+        <p>Three ideas, in order of importance.</p>
+        <div class="grid-3">
+          <div class="card">
+            <span class="eyebrow">Idea 01</span>
+            <h4>A route sells many named plans</h4>
+            <p>A <em>fare plan</em> is a sellable product on a route: a code, a name, a billing
+            period, an audience. A route can have as many as you like, all live at once.</p>
+          </div>
+          <div class="card">
+            <span class="eyebrow">Idea 02</span>
+            <h4>Each plan is a band, not a number</h4>
+            <p>Every plan carries a floor, a list and a ceiling. That is how "prices range" becomes
+            a rule the system enforces instead of a habit staff carry in their heads.</p>
+          </div>
+          <div class="card">
+            <span class="eyebrow">Idea 03</span>
+            <h4>The agreed price locks to the subscription</h4>
+            <p>What the customer agreed is written onto their subscription and never recomputed.
+            Raising the list price affects new sales only, until you deliberately re-rate.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <h3>The schema</h3>
+        <div class="code-block"><pre><span class="c">-- A named, sellable price point on a route.</span>
+<span class="c">-- One route can carry as many of these as you need, all active at once.</span>
+<span class="k">create table</span> <span class="t">fare_plans</span> (
+  fare_plan_id    bigint generated always as identity primary key,
+  route_id        bigint  <span class="k">not null</span> references routes(route_id) on delete restrict,
+  code            text    <span class="k">not null</span>,   <span class="c">-- 'SOW-SAN-MTH-5D'</span>
+  name            text    <span class="k">not null</span>,   <span class="c">-- 'Monthly, 5 days a week'</span>
+
+  billing_period  text    <span class="k">not null</span> check (billing_period in
+                    ('weekly','monthly','termly','once_off')),
+  audience        text    <span class="k">not null</span> default 'individual' check (audience in
+                    ('individual','corporate','scholar','staff')),
+
+  <span class="c">-- the dimensions your prices actually vary on</span>
+  days_per_week   smallint check (days_per_week between 1 and 7),
+  direction       text    check (direction in ('one_way','return')),
+  boarding_zone   text,                    <span class="c">-- board closer in, pay less</span>
+  min_seats       smallint <span class="k">not null</span> default 1,   <span class="c">-- bulk tiers for companies</span>
+
+  is_active       boolean  <span class="k">not null</span> default true,
+  created_at      timestamptz <span class="k">not null</span> default now(),
+
+  <span class="k">unique</span> (route_id, code)
+);
+
+<span class="c">-- Prices are versioned. History is never overwritten, so an invoice</span>
+<span class="c">-- raised in March can always be explained in September.</span>
+<span class="k">create table</span> <span class="t">fare_plan_versions</span> (
+  version_id      bigint generated always as identity primary key,
+  fare_plan_id    bigint <span class="k">not null</span> references fare_plans(fare_plan_id) on delete cascade,
+
+  list_price      numeric(10,2) <span class="k">not null</span> check (list_price    &gt;= 0),
+  floor_price     numeric(10,2) <span class="k">not null</span> check (floor_price   &gt;= 0),
+  ceiling_price   numeric(10,2) <span class="k">not null</span> check (ceiling_price &gt;= 0),
+  currency        char(3) <span class="k">not null</span> default 'ZAR',
+
+  effective_from  date <span class="k">not null</span>,
+  effective_to    date,
+
+  <span class="k">check</span> (floor_price &lt;= list_price and list_price &lt;= ceiling_price),
+  <span class="k">check</span> (effective_to is null or effective_to &gt; effective_from),
+
+  <span class="c">-- the database itself refuses two overlapping prices on one plan</span>
+  <span class="k">exclude using gist</span> (
+    fare_plan_id <span class="k">with</span> =,
+    daterange(effective_from, coalesce(effective_to, 'infinity'::date), '[)') <span class="k">with</span> &amp;&amp;
+  )
+);
+
+<span class="c">-- The subscription binds to a plan and locks the agreed price.</span>
+<span class="k">alter table</span> <span class="t">subscriptions</span>
+  <span class="k">add column</span> fare_plan_id     bigint references fare_plans(fare_plan_id),
+  <span class="k">add column</span> agreed_price     numeric(10,2),   <span class="c">-- per seat, per period</span>
+  <span class="k">add column</span> price_locked_at  timestamptz,
+  <span class="k">add column</span> discount_reason  text;            <span class="c">-- required if below list</span></pre></div>
+
+        <p style="margin-top:1.25rem">A trigger validates <code>agreed_price</code> against the
+        plan's live band at the moment of sale, and demands a reason for anything below list. That
+        single rule is what turns a range from a liability into a policy.</p>
+
+        <div class="code-block" style="margin-top:0.9rem"><pre><span class="k">create function</span> <span class="t">enforce_fare_band</span>() <span class="k">returns</span> trigger <span class="k">as</span> $$
+<span class="k">declare</span> v <span class="t">fare_plan_versions</span>%rowtype;
+<span class="k">begin</span>
+  <span class="k">select</span> * <span class="k">into</span> v <span class="k">from</span> fare_plan_versions
+   <span class="k">where</span> fare_plan_id = new.fare_plan_id
+     <span class="k">and</span> daterange(effective_from, coalesce(effective_to,'infinity'::date),'[)')
+         @&gt; coalesce(new.start_date, current_date);
+
+  <span class="k">if not found then</span>
+    <span class="k">raise exception</span> 'No live price for plan % on %', new.fare_plan_id, new.start_date;
+  <span class="k">end if</span>;
+
+  new.agreed_price := coalesce(new.agreed_price, v.list_price);
+
+  <span class="k">if</span> new.agreed_price &lt; v.floor_price <span class="k">or</span> new.agreed_price &gt; v.ceiling_price <span class="k">then</span>
+    <span class="k">raise exception</span> 'R% is outside the agreed band R%–R%',
+      new.agreed_price, v.floor_price, v.ceiling_price;
+  <span class="k">end if</span>;
+
+  <span class="k">if</span> new.agreed_price &lt; v.list_price <span class="k">and</span> coalesce(new.discount_reason,'') = '' <span class="k">then</span>
+    <span class="k">raise exception</span> 'A discount below list price needs a recorded reason';
+  <span class="k">end if</span>;
+
+  new.price_locked_at := now();
+  <span class="k">return</span> new;
+<span class="k">end</span>; $$ <span class="k">language</span> plpgsql;</pre></div>
+      </div>
+
+      <div class="stack">
+        <h3>Worked example — one route, nine prices</h3>
+        <p>Soweto&nbsp;→&nbsp;Sandton CBD, morning commuter run. Every row below is a separate
+        <code>fare_plan</code> on the <em>same</em> route, all live simultaneously — which is exactly
+        what today's schema cannot express.</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Plan code</th>
+                <th>Sold as</th>
+                <th>Audience</th>
+                <th class="num">Floor</th>
+                <th class="num">List</th>
+                <th class="num">Ceiling</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="code">SOW-SAN-MTH-5D</td><td>Monthly, 5 days</td><td>Individual</td>
+                <td class="num">1 650.00</td><td class="num">1 850.00</td><td class="num">1 950.00</td></tr>
+              <tr><td class="code">SOW-SAN-MTH-3D</td><td>Monthly, 3 days</td><td>Individual</td>
+                <td class="num">1 100.00</td><td class="num">1 240.00</td><td class="num">1 320.00</td></tr>
+              <tr><td class="code">SOW-SAN-WK-5D</td><td>Weekly, 5 days</td><td>Individual</td>
+                <td class="num">470.00</td><td class="num">520.00</td><td class="num">560.00</td></tr>
+              <tr><td class="code">SOW-SAN-MTH-ZB</td><td>Monthly, boards Diepkloof</td><td>Individual</td>
+                <td class="num">1 450.00</td><td class="num">1 650.00</td><td class="num">1 750.00</td></tr>
+              <tr><td class="code">SOW-SAN-MTH-OW</td><td>Monthly, one-way only</td><td>Individual</td>
+                <td class="num">980.00</td><td class="num">1 100.00</td><td class="num">1 180.00</td></tr>
+              <tr><td class="code">SOW-SAN-CORP-10</td><td>Monthly, 10+ seats</td><td>Corporate</td>
+                <td class="num">1 520.00</td><td class="num">1 700.00</td><td class="num">1 800.00</td></tr>
+              <tr><td class="code">SOW-SAN-CORP-25</td><td>Monthly, 25+ seats</td><td>Corporate</td>
+                <td class="num">1 400.00</td><td class="num">1 580.00</td><td class="num">1 680.00</td></tr>
+              <tr><td class="code">SOW-SAN-SCH-TRM</td><td>Per school term</td><td>Scholar</td>
+                <td class="num">3 400.00</td><td class="num">3 800.00</td><td class="num">4 100.00</td></tr>
+              <tr><td class="code">SOW-SAN-OFF-RET</td><td>Once-off return</td><td>Individual</td>
+                <td class="num">130.00</td><td class="num">145.00</td><td class="num">170.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout is-good" style="margin-top:1.1rem">
+          <h4>What this buys you the day it ships</h4>
+          <p>Revenue splits by plan without anyone tagging anything. A price rise is a new
+          <code>fare_plan_version</code> — existing riders keep their locked rate until you choose
+          to re-rate them, with notice. Corporate bulk rates stop being a spreadsheet. And a seat
+          sold below floor is rejected by the database rather than discovered at month-end.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 4. JOURNEYS ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num"><i>04</i><span class="eyebrow">End-to-end flows</span></div>
+      <h2>Every journey through the system</h2>
+      <p class="lede">Four customer journeys and the operator journey that carries them. Each step
+      names the system that does the work, so nothing hides behind "and then it's handled".</p>
+    </div>
+
+    <div class="stack-l">
+
+      <div class="legend">
+        <span class="eyebrow" style="margin-right:0.25rem">Diagram key</span>
+        <span class="legend-item"><span class="lg-node"></span> Step in this journey</span>
+        <span class="legend-item"><span class="lg-node ring"></span> Interchange — another system takes over</span>
+        <span class="legend-item"><span class="lg-node sq"></span> Terminus — a settled end state</span>
+      </div>
+
+      <!-- Journey 1 -->
+      <div class="journey" style="--jline: var(--line-1)">
+        <div class="journey-head">
+          <span class="journey-badge">Journey&nbsp;01</span>
+          <div>
+            <h3>The individual commuter subscription</h3>
+            <p class="who">A person books a standing seat on a route and pays every month.
+            Your highest-volume, highest-value journey.</p>
+          </div>
+        </div>
+        <ol class="line">
+          <li class="stop">
+            <h4>Enquiry and quote</h4>
+            <p class="detail">Customer picks a route, a boarding stop and a commitment — 5 days or
+            3, return or one-way. The system lists only the fare plans they qualify for and quotes
+            the <em>list</em> price of each. Nobody types a number.</p>
+            <span class="sys">fare_plans · fare_plan_versions</span>
+          </li>
+          <li class="stop interchange">
+            <h4>Capacity check before anything is promised</h4>
+            <p class="detail">Before a quote is confirmed, the system tests the next 90 days of trips
+            on that route and pattern. If any dated trip cannot seat one more standing rider, the
+            plan is offered as waitlist instead of sale. This is the step that stops you selling a
+            seat you do not have.</p>
+            <span class="sys">seat_ledger · trips</span>
+          </li>
+          <li class="stop">
+            <h4>Price agreed and locked</h4>
+            <p class="detail">Staff may move within the band. Below list demands a reason on the
+            record. Outside the band the database refuses the write. The agreed figure is stamped
+            onto the subscription with a timestamp and never recalculated.</p>
+            <span class="sys">subscriptions.agreed_price · enforce_fare_band()</span>
+          </li>
+          <li class="stop">
+            <h4>Mandate and first payment</h4>
+            <p class="detail">Card or EFT through the gateway for the first period, plus a DebiCheck
+            debit-order mandate for the recurring collection. Subscription stays
+            <code>pending_activation</code> until the first payment clears — never before.</p>
+            <span class="sys">payments · payment_mandates</span>
+          </li>
+          <li class="stop interchange">
+            <h4>Standing reservation materialises</h4>
+            <p class="detail">Activation writes a reservation into the seat ledger for every trip in
+            the paid period matching their pattern — roughly 22 trips for a 5-day month. Those seats
+            are now genuinely unavailable to once-off buyers. This is the mechanism that makes
+            capacity real rather than notional.</p>
+            <span class="sys">seat_ledger · scheduled job</span>
+          </li>
+          <li class="stop">
+            <h4>Riding, day to day</h4>
+            <p class="detail">The rider appears on each trip manifest automatically. The driver marks
+            boarded or no-show on a phone. No-shows accumulate against the account rather than
+            vanishing.</p>
+            <span class="sys">trip_manifests · bookings</span>
+          </li>
+          <li class="stop interchange">
+            <h4>The billing run, every month</h4>
+            <p class="detail">A scheduled job finds subscriptions due, raises a numbered VAT invoice
+            at the locked price, applies any credit balance, presents the debit order, and emails
+            the invoice. Failures land in a worklist for a human — not in silence.</p>
+            <span class="sys">invoices · billing job · work_items</span>
+          </li>
+          <li class="stop">
+            <h4>Change mid-life</h4>
+            <p class="detail">Upgrade, downgrade, pause, change boarding stop. Each is a plan change
+            with a pro-rata credit or charge and a matching adjustment to the seat reservations.
+            Every change is a row in the subscription's history — never an in-place edit.</p>
+            <span class="sys">subscription_changes · credit_notes</span>
+          </li>
+          <li class="stop terminus">
+            <h4>Renewal, or a clean exit</h4>
+            <p class="detail">Renewal is silent while the debit order clears. Cancellation honours
+            the notice period, releases the future seats back to inventory, settles the final
+            balance and records a reason you can report on.</p>
+            <span class="sys">subscriptions.status · churn_reasons</span>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Journey 2 -->
+      <div class="journey" style="--jline: var(--line-2)">
+        <div class="journey-head">
+          <span class="journey-badge">Journey&nbsp;02</span>
+          <div>
+            <h3>The company or school account</h3>
+            <p class="who">One organisation pays for many named passengers. Different from
+            Journey&nbsp;01 in a way the current schema has no room for at all.</p>
+          </div>
+        </div>
+        <ol class="line">
+          <li class="stop">
+            <h4>The account is a parent, not a customer</h4>
+            <p class="detail">A company record with a billing contact, VAT number, purchase-order
+            requirement and payment terms. Passengers are <em>children</em> of that account — they
+            ride, they never pay. Today's <code>customers</code> table cannot express this
+            relationship.</p>
+            <span class="sys">accounts · account_members</span>
+          </li>
+          <li class="stop">
+            <h4>Bulk quote against a volume plan</h4>
+            <p class="detail">Seat count selects the tier automatically — 10+ or 25+ — and the whole
+            agreement sits inside that plan's band. One negotiated rate, applied to every seat on
+            the contract.</p>
+            <span class="sys">fare_plans.min_seats</span>
+          </li>
+          <li class="stop">
+            <h4>Passenger roster</h4>
+            <p class="detail">Upload or capture the named riders and their boarding stops. Seats are
+            contracted at the account level, so swapping a passenger is an edit to the roster, not a
+            new sale and not a re-price.</p>
+            <span class="sys">account_members · seat_assignments</span>
+          </li>
+          <li class="stop interchange">
+            <h4>Reservations, once, for the whole roster</h4>
+            <p class="detail">The same seat-ledger mechanism as Journey&nbsp;01, but committed in one
+            block across the contract term. A 25-seat school contract reserves 25 seats on every
+            qualifying trip for the term.</p>
+            <span class="sys">seat_ledger</span>
+          </li>
+          <li class="stop">
+            <h4>One consolidated invoice</h4>
+            <p class="detail">A single monthly tax invoice with a line per passenger or per cost
+            centre, carrying their PO number, on their terms — 30 days from statement rather than on
+            presentation. Not 25 separate invoices.</p>
+            <span class="sys">invoices · invoice_lines</span>
+          </li>
+          <li class="stop">
+            <h4>Reconciliation and dunning</h4>
+            <p class="detail">EFT arrives as one lump against several invoices. The allocation screen
+            splits it. Ageing runs 30/60/90 and the chase sequence escalates from reminder to
+            statement to service hold.</p>
+            <span class="sys">payment_allocations · ageing view</span>
+          </li>
+          <li class="stop terminus">
+            <h4>Term end and renewal</h4>
+            <p class="detail">School terms end on a date, corporate contracts renew. Both produce a
+            usage report — seats contracted against seats actually ridden — which is the number that
+            wins or loses the renewal.</p>
+            <span class="sys">utilisation report</span>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Journey 3 -->
+      <div class="journey" style="--jline: var(--line-3)">
+        <div class="journey-head">
+          <span class="journey-badge">Journey&nbsp;03</span>
+          <div>
+            <h3>The once-off rider</h3>
+            <p class="who">Single trip, charter or airport run. Pays upfront, has no subscription,
+            and must never be sold a seat a subscriber already holds.</p>
+          </div>
+        </div>
+        <ol class="line">
+          <li class="stop">
+            <h4>Search for a trip</h4>
+            <p class="detail">Route and date returns dated trips with <em>genuinely</em> free seats —
+            total capacity minus subscriber reservations minus live holds. Not the loose
+            <code>seats_occupied</code> integer sitting on the row today.</p>
+            <span class="sys">seat_availability view</span>
+          </li>
+          <li class="stop interchange">
+            <h4>Seat held, with a real clock</h4>
+            <p class="detail">Selecting a seat writes a hold with a 15-minute expiry. A scheduled job
+            actually releases expired holds — the current schema has a <code>hold_expiry</code> column
+            that nothing ever reads. Concurrent buyers are serialised by the ledger, so the same seat
+            cannot go twice.</p>
+            <span class="sys">seat_ledger · hold expiry job</span>
+          </li>
+          <li class="stop">
+            <h4>Priced from a once-off plan</h4>
+            <p class="detail">Once-off fares are ordinary fare plans with
+            <code>billing_period&nbsp;=&nbsp;'once_off'</code> — same bands, same rules. One pricing
+            model covers both halves of the business.</p>
+            <span class="sys">fare_plans</span>
+          </li>
+          <li class="stop">
+            <h4>Paid before confirmed</h4>
+            <p class="detail">Payment clears, the hold converts to a confirmed booking and a numbered
+            invoice plus receipt issue immediately. If payment fails the hold simply lapses and the
+            seat returns to sale.</p>
+            <span class="sys">payments · invoices · bookings</span>
+          </li>
+          <li class="stop">
+            <h4>Ticket, board, complete</h4>
+            <p class="detail">A booking reference with a QR code. The driver scans at the kerb; the
+            rider joins the same manifest as the subscribers. One list, whatever the customer paid.</p>
+            <span class="sys">trip_manifests</span>
+          </li>
+          <li class="stop terminus">
+            <h4>Completed — or refunded</h4>
+            <p class="detail">Completion closes it. Cancellation runs the refund policy by notice
+            window, issues a credit note or gateway refund, and releases the seat far enough ahead
+            that it can be resold.</p>
+            <span class="sys">credit_notes · refunds</span>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Journey 4 -->
+      <div class="journey" style="--jline: var(--line-4)">
+        <div class="journey-head">
+          <span class="journey-badge">Journey&nbsp;04</span>
+          <div>
+            <h3>When something goes wrong</h3>
+            <p class="who">Failed collections, cancelled trips, no-shows and disputes. The journey
+            most systems ignore, and the one that decides whether customers stay.</p>
+          </div>
+        </div>
+        <ol class="line">
+          <li class="stop">
+            <h4>A debit order fails</h4>
+            <p class="detail">The invoice goes overdue and a dunning sequence starts: reminder on
+            day&nbsp;1, retry on day&nbsp;3, notice on day&nbsp;7, service hold on day&nbsp;14. Every
+            step is logged against the account and the rider keeps their seat until the hold — you do
+            not strand a paying customer over a bank timing issue.</p>
+            <span class="sys">dunning job · notifications</span>
+          </li>
+          <li class="stop interchange">
+            <h4>You cancel a trip</h4>
+            <p class="detail">Breakdown, driver unavailable, weather. Cancelling a trip fans out
+            automatically: notify every rider on the manifest, credit once-off riders in full, and
+            add a pro-rata credit to each subscriber's next invoice. Today that is entirely manual
+            and entirely forgettable.</p>
+            <span class="sys">trip cancellation · credit_notes</span>
+          </li>
+          <li class="stop">
+            <h4>A rider does not show</h4>
+            <p class="detail">Recorded on the manifest, not billable — a subscriber pays for the seat
+            regardless — but tracked, because a pattern of no-shows is your earliest churn signal and
+            a chance to right-size someone from 5 days to 3.</p>
+            <span class="sys">trip_manifests · churn signals</span>
+          </li>
+          <li class="stop">
+            <h4>A billing dispute</h4>
+            <p class="detail">Because the agreed price is locked with a timestamp and every change is
+            a historical row, you can show the customer precisely what was agreed, when, by whom, and
+            what changed since. This is what versioned pricing is really for.</p>
+            <span class="sys">audit_logs · subscription_changes</span>
+          </li>
+          <li class="stop terminus">
+            <h4>Resolved, or lost cleanly</h4>
+            <p class="detail">Credit note, refund or write-off — each a proper accounting document,
+            never an edit to a historical invoice. If they leave, the reason is captured against a
+            fixed list you can actually report on.</p>
+            <span class="sys">credit_notes · churn_reasons</span>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Journey 5 -->
+      <div class="journey" style="--jline: var(--line-5)">
+        <div class="journey-head">
+          <span class="journey-badge">Journey&nbsp;05</span>
+          <div>
+            <h3>The operator and the fleet</h3>
+            <p class="who">Not a customer journey, but the one that delivers all four above. You run
+            mixed — owned vehicles plus subcontractors — and those two need different money.</p>
+          </div>
+        </div>
+        <ol class="line">
+          <li class="stop">
+            <h4>Onboarding and vetting</h4>
+            <p class="detail">A subcontracted operator submits company registration, operating
+            licence, insurance and tax clearance. Each is a document with an expiry date. Nobody gets
+            allocated a trip until their pack is complete and current.</p>
+            <span class="sys">fleet_owners · documents</span>
+          </li>
+          <li class="stop">
+            <h4>Compliance that watches itself</h4>
+            <p class="detail">Driver licences, PrDPs, medicals and vehicle inspections all carry
+            expiry dates. A daily job raises a work item at 60, 30 and 7 days, and blocks allocation
+            on the day it lapses. The columns already exist — nothing currently watches them.</p>
+            <span class="sys">expiry job · work_items</span>
+          </li>
+          <li class="stop interchange">
+            <h4>Timetable generates trips</h4>
+            <p class="detail">Routes gain a schedule — days of week, departure times, seasonal
+            exceptions. A job materialises dated trips 90 days ahead so subscriber seats have
+            somewhere to be reserved. Trips stop being hand-created rows.</p>
+            <span class="sys">route_schedules · trip generation job</span>
+          </li>
+          <li class="stop">
+            <h4>Allocation against demand</h4>
+            <p class="detail">Each trip already knows its committed seats from the ledger. Allocation
+            picks a vehicle whose capacity covers it and a driver who is compliant and not
+            double-booked, preferring owned fleet before subcontractors — cheapest capacity first.</p>
+            <span class="sys">seat_ledger · allocation rules</span>
+          </li>
+          <li class="stop">
+            <h4>Two kinds of cost</h4>
+            <p class="detail">An owned trip accrues internal cost — fuel, driver hours, maintenance.
+            A subcontracted trip accrues a payable to the operator at their agreed rate. Both hang
+            off the same trip, which is the only way you see true margin per route.</p>
+            <span class="sys">trip_costs · operator_rates</span>
+          </li>
+          <li class="stop terminus">
+            <h4>Operator payout</h4>
+            <p class="detail">Month-end totals completed trips per operator, applies commission,
+            deducts penalties for no-shows or cancellations, and produces a remittance they can
+            check against their own records.</p>
+            <span class="sys">operator_statements · payouts</span>
+          </li>
+        </ol>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 5. PLAN ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num"><i>05</i><span class="eyebrow">Delivery</span></div>
+      <h2>The build, in order</h2>
+      <p class="lede">Sequenced so that the riskiest thing is fixed first and you have something
+      usable at the end of every phase. Durations assume one developer working steadily.</p>
+    </div>
+
+    <div>
+      <div class="phase">
+        <div class="phase-when"><b>Phase 0</b><span>2–3 days</span></div>
+        <div>
+          <h4>Close the door</h4>
+          <p style="font-size:0.9375rem;color:var(--ink-soft)">Nothing else matters while the
+          database is open to the internet. This ships before any feature work.</p>
+          <ul>
+            <li>Supabase Auth with staff, operator and customer roles</li>
+            <li>Row-level security on every table, denied by default</li>
+            <li>Rotate the exposed anon key; move service operations behind edge functions</li>
+            <li>Backups verified, and a restore actually tested</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-when"><b>Phase 1</b><span>1 week</span></div>
+        <div>
+          <h4>Repair what is already built</h4>
+          <p style="font-size:0.9375rem;color:var(--ink-soft)">Nine pages exist and none of them
+          work. Fixing them is far cheaper than rewriting them.</p>
+          <ul>
+            <li>Install and configure Tailwind so the operations pages render</li>
+            <li>Correct every <code>.eq("id")</code> to the real primary key, and the React keys with them</li>
+            <li>Replace the three ghost tables with real views over invoices and payments</li>
+            <li>Un-swap <code>PricingModal</code> and <code>SubscriptionModal</code></li>
+            <li>Move navigation onto <code>react-router-dom</code> so URLs work</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-when"><b>Phase 2</b><span>1–2 weeks</span></div>
+        <div>
+          <h4>The fare engine</h4>
+          <p style="font-size:0.9375rem;color:var(--ink-soft)">Section 03, built. This is what you
+          asked for and everything downstream depends on it.</p>
+          <ul>
+            <li><code>fare_plans</code> and <code>fare_plan_versions</code> with the overlap exclusion constraint</li>
+            <li>Band enforcement trigger, plus mandatory reasons for discounts</li>
+            <li>Migrate existing <code>route_pricing</code> rows into plans without losing history</li>
+            <li>Bind subscriptions to plans; retire <code>price_override</code></li>
+            <li>Plan management UI on the route page, and a plan picker in the subscription flow</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-when"><b>Phase 3</b><span>2 weeks</span></div>
+        <div>
+          <h4>Money that moves on its own</h4>
+          <ul>
+            <li>Sequential numbering for invoices, credit notes and bookings</li>
+            <li>VAT on invoices and lines, with a compliant tax invoice layout</li>
+            <li>Scheduled billing run over subscriptions due, with a failure worklist</li>
+            <li>Gateway integration and DebiCheck debit-order mandates</li>
+            <li>Credit notes, refunds, allocation and an ageing view</li>
+            <li>Dunning sequence with escalation</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-when"><b>Phase 4</b><span>2 weeks</span></div>
+        <div>
+          <h4>Capacity you can trust</h4>
+          <p style="font-size:0.9375rem;color:var(--ink-soft)">The hardest part, and the one with no
+          foundation at all today.</p>
+          <ul>
+            <li>Route schedules, and a job that materialises trips 90 days ahead</li>
+            <li>The seat ledger — hold, commit and release, with oversell impossible by constraint</li>
+            <li>Subscriber standing reservations across future trips</li>
+            <li>Hold expiry job, so abandoned carts return seats to sale</li>
+            <li>Trip manifests, driver check-in, and no-show capture</li>
+            <li>Vehicle and driver allocation with compliance blocking</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-when"><b>Phase 5</b><span>1–2 weeks</span></div>
+        <div>
+          <h4>Company and school accounts</h4>
+          <ul>
+            <li>Parent accounts with member passengers</li>
+            <li>Roster import and seat assignment</li>
+            <li>Consolidated invoicing with PO numbers and payment terms</li>
+            <li>Volume tiers keyed off <code>min_seats</code></li>
+            <li>Utilisation reporting for renewals</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-when"><b>Phase 6</b><span>2 weeks</span></div>
+        <div>
+          <h4>Self-service and margin</h4>
+          <ul>
+            <li>Customer portal — sign up, pay, manage seat, download invoices</li>
+            <li>Operator portal scoped to their own fleet</li>
+            <li>Operator statements, commission and payouts</li>
+            <li>Trip costing and true margin per route</li>
+            <li>Compliance expiry automation across drivers and vehicles</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. NEEDS ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num"><i>06</i><span class="eyebrow">Before Phase 0</span></div>
+      <h2>What I need from you</h2>
+      <p class="lede">Six things, roughly in order of how much they block.</p>
+    </div>
+
+    <div class="stack">
+      <div class="ask"><i>01</i><p><strong>Supabase access to the real project.</strong> Either add
+      this session's account to the org that owns <code>atcynqooxmwcuifzwbue</code>, or send me a
+      schema dump. Until then I am planning against two SQL files that may not match what is
+      actually deployed — and that gap could change several decisions above.</p></div>
+
+      <div class="ask"><i>02</i><p><strong>Your real routes and prices.</strong> The Soweto–Sandton
+      table is illustrative. Send me your actual routes, stops and the full range you charge on each
+      — including the discounts you grant in practice — and I will model the bands to fit rather
+      than guess at them.</p></div>
+
+      <div class="ask"><i>03</i><p><strong>Confirmation on what drives your ranges.</strong> You said
+      prices generally range rather than varying on one axis. The model above covers boarding zone,
+      days per week, direction, audience and volume simultaneously. If your variation is mostly
+      negotiation within a band, we can carry fewer plans and lean on the floor–ceiling. Your call,
+      and it simplifies things if so.</p></div>
+
+      <div class="ask"><i>04</i><p><strong>Payment providers.</strong> PayFast is already referenced
+      in the invoices table. For recurring collection you will want DebiCheck mandates through
+      Netcash, Sage Pay or Stitch — the choice affects Phase&nbsp;3 meaningfully.</p></div>
+
+      <div class="ask"><i>05</i><p><strong>VAT status.</strong> Registered or not, and your VAT
+      number if so. It is far cheaper to build tax in from the start than to retrofit it across
+      invoice history later.</p></div>
+
+      <div class="ask"><i>06</i><p><strong>Access to the live site.</strong> This environment cannot
+      reach <code>trustarc.co.za</code>. If the customer portal in Phase&nbsp;6 should match what is
+      already there, I need to see it — a few screenshots would do.</p></div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <p style="font-size:0.875rem;color:var(--muted);max-width:76ch">
+      Prepared from a full read of the <code>trustarc-crm</code> repository at commit
+      <code>2a9697b</code> — 7,519 lines across 38 source files, plus
+      <code>restore_schema.sql</code> and <code>schema_additions.sql</code>. Live database and live
+      website were not reachable from this environment; every finding above is traceable to a file
+      in the repo.
+    </p>
+  </div>
+</footer>
