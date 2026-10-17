@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { iso } from "./store.jsx";
 
 export function Modal({ title, onClose, children, wide }) {
   useEffect(() => {
@@ -20,43 +21,39 @@ export function Modal({ title, onClose, children, wide }) {
   );
 }
 
-// fields: [{ key, label, type?, options?: [{value,label}], required? }]
-export function EntityForm({ fields, initial, onSave, onDelete, onCancel }) {
+// fields: [{ key, label, type?, options?: [{value,label}], required?, full?, noBlank? }]
+export function EntityForm({ fields, initial, onSave, onDelete, onCancel, children }) {
   const [v, setV] = useState(initial);
   const set = (k, val) => setV((p) => ({ ...p, [k]: val }));
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSave(v);
-      }}
-    >
+    <form onSubmit={(e) => { e.preventDefault(); onSave(v); }}>
       <div className="grid2">
         {fields.map((f) => (
           <label key={f.key} className={f.full ? "full" : ""}>
             <span>{f.label}</span>
             {f.options ? (
-              <select value={v[f.key] ?? ""} onChange={(e) => set(f.key, e.target.value)}>
+              <select value={v[f.key] ?? ""} required={f.required} onChange={(e) => set(f.key, e.target.value)}>
                 {!f.noBlank && <option value="">—</option>}
-                {f.options.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
+                {f.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
+            ) : f.type === "checkbox" ? (
+              <input type="checkbox" checked={!!v[f.key]} onChange={(e) => set(f.key, e.target.checked)} />
             ) : (
               <input
                 type={f.type || "text"}
                 required={f.required}
+                min={f.type === "number" ? 0 : undefined}
+                step={f.type === "number" ? "any" : undefined}
                 value={v[f.key] ?? ""}
-                onChange={(e) => set(f.key, f.type === "number" ? e.target.value : e.target.value)}
+                onChange={(e) => set(f.key, e.target.value)}
               />
             )}
           </label>
         ))}
       </div>
+      {children}
       <div className="actions">
-        {onDelete && (
-          <button type="button" className="btn danger" onClick={onDelete}>Delete</button>
-        )}
+        {onDelete && <button type="button" className="btn danger" onClick={onDelete}>Delete</button>}
         <span className="grow" />
         <button type="button" className="btn" onClick={onCancel}>Cancel</button>
         <button type="submit" className="btn primary">Save</button>
@@ -65,9 +62,9 @@ export function EntityForm({ fields, initial, onSave, onDelete, onCancel }) {
   );
 }
 
-export function Empty({ children }) {
-  return <div className="empty">{children}</div>;
-}
-
-export const fmtDate = (d) => (d ? new Date(d.length === 10 ? d + "T00:00" : d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "—");
-export const today = () => new Date().toISOString().slice(0, 10);
+export const Empty = ({ children }) => <div className="empty">{children}</div>;
+export const Pill = ({ v }) => <span className={"pill " + v}>{v}</span>;
+export const today = () => iso(new Date());
+export const fmtDate = (d) =>
+  d ? new Date(d.length === 10 ? d + "T00:00" : d).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" }) : "—";
+export const opts = (list, label) => list.map((x) => ({ value: x.id, label: label(x) }));
