@@ -1,0 +1,27 @@
+/*
+  BRAND TOKENS — single source of truth for look & feel.
+  PLACEHOLDER VALUES: derived from the public trademark description (blue / turquoise / pink / grey).
+  Replace with the official palette and fonts from the TrustArc brand guidelines; nothing else needs to change.
+*/
+:root {
+  --brand-primary: #1b4fd8;
+  --brand-primary-strong: #123aa8;
+  --brand-accent: #00b3a4;
+  --brand-highlight: #e0457b;
+  --brand-neutral: #8b95a7;
+
+  --bg: #f4f6fa; --surface: #ffffff; --surface-2: #f8f9fc; --border: #e2e6ee;
+  --text: #121a2b; --text-muted: #5b667a; --sidebar: #0d1b3d; --sidebar-text: #c9d3ea;
+  --good: #11875a; --warn: #b7791f; --bad: #c0352b;
+  --good-bg: #e3f5ec; --warn-bg: #fbf1dc; --bad-bg: #fbe5e3; --info-bg: #e5edff;
+  --radius: 10px; --shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1220; --surface: #121b2e; --surface-2: #16213a; --border: #243150;
+    --text: #e8edf7; --text-muted: #9aa7c0; --sidebar: #070d1a; --sidebar-text: #aab6d3;
+    --good-bg: #0f3326; --warn-bg: #3a2c0d; --bad-bg: #3d1713; --info-bg: #14264f;
+    --brand-primary: #5b86ff; --brand-primary-strong: #7c9dff;
+  }
+}
