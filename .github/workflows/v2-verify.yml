@@ -18,5 +18,5 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: node --test src/v2/tracking.test.js
+      - run: node --test src/v2/tracking.test.js src/v2/quoteRules.test.js src/v2/vehicleCatalog.test.js
       - run: npm run build
