@@ -12,6 +12,7 @@ import PeopleOnboarding from "./PeopleOnboarding.jsx";
 import ExactQuoteRequest from "./ExactQuoteRequest.jsx";
 import VehicleCataloguePicker from "./VehicleCataloguePicker.jsx";
 import {ConnectionMap,BuildPulse,OperationsInfographic,TrackingReadiness} from "./VisualInsights.jsx";
+import FeatureStatus from "./FeatureStatus.jsx";
 import { TRACKING_PROVIDERS } from "./tracking.js";
 import "./TrustArcApp.css";
 
@@ -197,6 +198,7 @@ function Profile({role,go,openInstall}) {
     <Panel className="ta2-account-card"><div className="ta2-account-avatar"><UserRound size={24}/></div><div><strong>{ROLES.find(r=>r.id===role)?.name} preview</strong><small>Demonstration mode · not signed in</small></div><Pill>Preview</Pill></Panel>
     <div className="ta2-menu-list">
       <button onClick={openInstall}><Smartphone size={20}/><span>Install TrustArc on this device</span><ArrowRight size={16}/></button>
+      <button onClick={()=>go("status")}><CheckCircle2 size={20}/><span>What works today? · Live status</span><ArrowRight size={16}/></button>
       {role==="operations"&&<><button onClick={()=>go("explore")}><Compass size={20}/><span>Marketplace review</span><ArrowRight size={16}/></button><button onClick={()=>go("wallet")}><Wallet size={20}/><span>Finance & wallet architecture</span><ArrowRight size={16}/></button><button onClick={()=>go("journeys")}><Users size={20}/><span>Bookings & trip views</span><ArrowRight size={16}/></button><button onClick={()=>go("people")}><Plus size={20}/><span>Add customers, drivers and fleet owners</span><ArrowRight size={16}/></button><button onClick={()=>go("tracking")}><Radio size={20}/><span>Live fleet tracking</span><ArrowRight size={16}/></button></>}
       <button onClick={()=>go("privacy")}><ShieldCheck size={20}/><span>Privacy and POPIA controls</span><ArrowRight size={16}/></button>
     </div>
@@ -246,7 +248,7 @@ export default function TrustArcApp() {
       <div className="ta2-header-actions"><span className="ta2-preview-chip">APP PREVIEW</span><button onClick={()=>setInstallVisible(true)} className="ta2-header-icon" aria-label="Install TrustArc"><Smartphone size={19}/></button><div className="ta2-role-wrapper"><button className="ta2-role-button" onClick={()=>setRoleOpen(x=>!x)} aria-label="Switch role" aria-expanded={roleOpen}><span className="ta2-role-avatar"><UserRound size={17}/></span><span className="ta2-role-text">{ROLES.find(x=>x.id===role)?.name}</span><ChevronDown size={15}/></button>
       {roleOpen&&<div className="ta2-role-menu">{ROLES.map(r=><button key={r.id} onClick={()=>switchRole(r.id)}><span><strong>{r.name}</strong><small>{r.subtitle}</small></span>{role===r.id&&<Check size={17}/>}</button>)}<p>Role preview only. Real access will require verified permissions.</p></div>}</div></div>
     </div></header>
-    <div className="ta2-announcement"><div><ShieldCheck size={15}/><span>TrustArc 2.0 development preview · No live bookings, payments or GPS connected</span></div></div>
+    <div className="ta2-announcement"><div><ShieldCheck size={15}/><span>TrustArc 2.0 development preview · No live bookings, payments or GPS connected</span><button className="ta2-status-link" onClick={()=>go("status")}>What works? <ArrowRight size={13}/></button></div></div>
     <main className="ta2-main">
       {tab==="home"&&role==="customer"&&<CustomerHome go={go} setSelectedRoute={setSelectedRoute} onFind={search=>{setJourneySearch(search);go("explore")}}/>}
       {tab==="home"&&role==="operations"&&<OperationsHome go={go}/>}
@@ -262,6 +264,7 @@ export default function TrustArcApp() {
       {tab==="people"&&role==="operations"&&<PeopleOnboarding/>}
       {tab==="profile"&&<Profile role={role} go={go} openInstall={()=>setInstallVisible(true)}/>}
       {tab==="privacy"&&<Privacy/>}
+      {tab==="status"&&<FeatureStatus onBack={()=>go("profile")}/>}
       <footer className="ta2-footer"><strong>TRUSTARC.</strong><span>Seamless journeys. Everywhere.</span><small>BUILD 0.2 · PWA EXPERIENCE PREVIEW</small></footer>
     </main>
     <nav className="ta2-bottom-nav" aria-label="Primary app navigation"><div className="ta2-tab-row">{tabs.map(({id,label,icon:Icon})=><button key={id} className={"ta2-tab "+(tab===id?"active":"")} onClick={()=>go(id)} aria-current={tab===id?"page":undefined}><span className="ta2-tab-icon"><Icon size={21} strokeWidth={tab===id?2.5:1.8}/></span><span>{label}</span></button>)}</div></nav>
