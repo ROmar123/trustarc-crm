@@ -228,7 +228,7 @@ export default function TrustArcApp() {
     </div></header>
     <div className="ta2-announcement"><div><ShieldCheck size={15}/><span>TrustArc 2.0 development preview · No live bookings, payments or GPS connected</span></div></div>
     <main className="ta2-main">
-      {tab==="home"&&role==="customer"&&<CustomerHome go={go} setSelectedRoute={setSelectedRoute}/>}
+      {tab==="home"&&role==="customer"&&<CustomerHome go={go} setSelectedRoute={setSelectedRoute} onFind={search=>{setJourneySearch(search);go("explore")}}/>}
       {tab==="home"&&role==="operations"&&<OperationsHome go={go}/>}
       {tab==="home"&&role==="fleet"&&<FleetHome go={go}/>}
       {tab==="home"&&role==="driver"&&<DriverHome go={go}/>}
