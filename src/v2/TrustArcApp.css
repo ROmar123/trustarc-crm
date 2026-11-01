@@ -429,3 +429,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
  .ta2-quote-contact select,.ta2-vehicle-lookup input,.ta2-vehicle-lookup select,
  .ta2-address-control input{font-size:16px;}
 }
+
+/* Build status shortcut visible without breaking the app header on mobile */
+.ta2-status-link{border:1px solid #d9c3e4;border-radius:999px;background:#faf5fc;color:#6c4388;font-size:10px;font-weight:700;padding:6px 10px;display:inline-flex;align-items:center;gap:6px;margin-left:auto;white-space:nowrap;}
+.ta2-status-link:hover{background:#eee0f7;}
+@media(max-width:450px){.ta2-announcement>div{gap:7px;}.ta2-announcement>div>span{font-size:9px;line-height:1.4;}.ta2-status-link{font-size:9px;padding:5px 7px;}}
