@@ -1,7 +1,7 @@
-import TrustArcV2 from "./v2/TrustArcV2.jsx";
+import TrustArcApp from "./v2/TrustArcApp.jsx";
 
-// The old CRM pages remain in source for controlled data/workflow migration.
-// The V2 shell is the replacement entry point on this development branch.
+// TrustArc 2.0 is the replacement application entry point on the isolated preview branch.
+// Legacy CRM pages remain intact until safe data migration and role-level access tests pass.
 export default function App() {
-  return <TrustArcV2 />;
+  return <TrustArcApp />;
 }
