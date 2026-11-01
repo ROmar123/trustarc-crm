@@ -56,3 +56,19 @@ A slice is done only when:
 - CRM repository uses Vite/React, Supabase JS and Leaflet; its old interface includes vehicles, routes, trips, bookings, invoicing etc.
 - Active Supabase project called TrustArc Control was found but its public schema table listing was empty at audit time. Do not assume it is the old CRM database.
 - No real Cartrack/Netstar credentials or tracking records were viewed.
+
+## S0.2 — Mobile-first experience (2026-11-01)
+- **Actual website style**: Warm cream `#f8f6f1`, page ink `#292133`, lighter violet `#73449f`, Outfit headings weight 500, serif-emphasis details, small JetBrains Mono eyebrows and pill controls. The original website `src/pages/landing.css` is the source of truth for these nuances; do not reinstate the dark CRM sidebar.
+- **New entry**: `src/App.jsx` now renders `src/v2/TrustArcApp.jsx` and `src/v2/TrustArcApp.css`.
+- **Persistent mobile bottom navigation**: Customer Home/Explore/Journeys/Wallet/Profile; Driver Home/Trips/Navigate/Earnings/Profile; Fleet Owner Home/Routes/Fleet/Earnings/Profile; Operations Home/Routes/Fleet/Live/More. Bottom dock honours iOS safe areas, with desktop dock too.
+- **Experience**: Customer route search (demo only), marketplace example cards, a route detail bottom sheet with stop-proposal and fare options; role-specific landing views; fleet/route local draft workflows; wallet, tracking and privacy placeholders.
+- **Installability foundation**: `public/app.webmanifest`, `public/trustarc-icon.png` copied from the authentic website, and `public/trustarc-sw.js` caches only static versioned assets. iOS Safari 'Add to Home Screen' guidance and Android browser install prompt support.
+- **Security**: No live credentials, payment operations, customers or GPS. Switching role is an interface preview; it must not become an authorisation mechanism. Vercel development branch remains protected and separate from production.
+- **Verification**: GitHub Actions node tests and Vite build succeeded for commit `363da33157818dd8cded2a389378d2d93a054d49`; Vercel preview reported READY. Visual user acceptance on mobile is still required.
+
+### Next slice S1 — foundation integration gate
+1. Identify actual production CRM database vs the active TrustArc Control Supabase project, and map existing business tables without changing either.
+2. Design and test real authentication, organisation membership, and role-aware session routing.
+3. Implement default-deny authorisation and RLS in a safe staging database first; cross-role access tests are mandatory.
+4. Then connect verified read-only vehicles and trips, replacing example cards and empty state indicators, preserving POPIA isolation.
+5. Gate production cutover behind reconciliation, backup, rollback and explicit acceptance.
