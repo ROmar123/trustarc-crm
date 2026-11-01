@@ -6,16 +6,16 @@ const destination={address:"Cape Town CBD",lat:-33.924,lng:18.423,verified:true}
 const request=()=>({origin,destination,frequency:"once",passengers:1,startDate:"2026-11-05",pickupTime:"07:30",returnTrip:false,days:[],contactType:"email",contact:"test@example.com",acknowledge:true});
 test("valid exact request passes validation",()=>assert.deepEqual(validateQuote(request()),[]));
 test("unverified and identical pins are refused",()=>{
- assert.match(validateQuote({...request(),origin:{...origin,verified:false}}).join(" "),"verified pickup");
- assert.match(validateQuote({...request(),destination:origin}).join(" "),"different");
+ assert.match(validateQuote({...request(),origin:{...origin,verified:false}}).join(" "),/verified pickup/);
+ assert.match(validateQuote({...request(),destination:origin}).join(" "),/different/);
 });
 test("recurring requests require days and return legs need timing",()=>{
- assert.match(validateQuote({...request(),frequency:"recurring"}).join(" "),"recurring travel day");
- assert.match(validateQuote({...request(),returnTrip:true}).join(" "),"return pickup");
+ assert.match(validateQuote({...request(),frequency:"recurring"}).join(" "),/recurring travel day/);
+ assert.match(validateQuote({...request(),returnTrip:true}).join(" "),/return pickup/);
 });
 test("customer can give just one contact method",()=>{
  assert.deepEqual(validateQuote({...request(),contactType:"phone",contact:"082 123 4567"}),[]);
- assert.match(validateQuote({...request(),contact:"not-an-email"}).join(" "),"valid email");
+ assert.match(validateQuote({...request(),contact:"not-an-email"}).join(" "),/valid email/);
 });
 test("summary preserves exact chosen request and does not claim submission",()=>{
  const s=quoteSummary(request());
