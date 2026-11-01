@@ -9,6 +9,8 @@ import {
 import TrustArcLogo from "./TrustArcLogo.jsx";
 import AppAddressSearch from "./AppAddressSearch.jsx";
 import PeopleOnboarding from "./PeopleOnboarding.jsx";
+import ExactQuoteRequest from "./ExactQuoteRequest.jsx";
+import VehicleCataloguePicker from "./VehicleCataloguePicker.jsx";
 import { TRACKING_PROVIDERS } from "./tracking.js";
 import "./TrustArcApp.css";
 
@@ -80,7 +82,7 @@ function InstallInfo({close,installPrompt}) {return <div className="ta2-sheet-ba
   <div className="ta2-install-step"><span>iPhone</span><p>Open this page in Safari, select <strong>Share → Add to Home Screen → Add</strong>.</p></div>
   {installPrompt?<Button onClick={installPrompt}>Install TrustArc <ArrowRight size={17}/></Button>:<Button secondary onClick={close}>Got it <Check size={17}/></Button>}
 </div></div>}
-function RouteDetail({route,close}) {
+function RouteDetail({route,close,onQuote}) {
   const [plan,setPlan]=useState("monthly");
   const [pickup,setPickup]=useState("approved");
   const [proposedPoint,setProposedPoint]=useState({address:"",lat:null,lng:null,verified:false});
@@ -98,7 +100,7 @@ function RouteDetail({route,close}) {
     {pickup==="proposed"&&<div className="ta2-location-proposal"><AppAddressSearch label="Proposed pickup address" value={proposedPoint} onChange={setProposedPoint} placeholder="Search and select a proposed stop"/><small>A suggested map pin is a proposal, never an approved stop.</small></div>}
     <h3>How would you like to travel?</h3>
     <div className="ta2-choice-group"><button className={plan==="monthly"?"active":""} onClick={()=>setPlan("monthly")}><Repeat2 size={18}/><span>Recurring subscription</span><CheckCircle2 size={17}/></button><button className={plan==="daily"?"active":""} onClick={()=>setPlan("daily")}><Ticket size={18}/><span>Buy selected travel days</span><CheckCircle2 size={17}/></button></div>
-    <div className="ta2-detail-footer"><div><small>Price</small><strong>{route.price}</strong></div><Button disabled>Booking opens after availability verification <ArrowRight size={15}/></Button></div>
+    <div className="ta2-detail-footer"><div><small>Price</small><strong>{route.price}</strong></div><Button onClick={onQuote}>Request exact journey quote <ArrowRight size={15}/></Button></div>
     <p className="ta2-disclaimer">No bookings, charges, seats or tracking data are created in this preview.</p>
   </div></div>
 }
@@ -124,17 +126,20 @@ function CustomerHome({go,setSelectedRoute,onFind}) {
     <div className="ta2-action-grid">{CARDS.map(({title,description,icon:Icon,tab})=><button className="ta2-action-card" key={tab} onClick={()=>go(tab)}><Icon size={22}/><strong>{title}</strong><span>{description}</span><ArrowUpRight className="ta2-action-arrow" size={17}/></button>)}</div>
   </>;
 }
-function Explore({setSelectedRoute,journeySearch}) {
+function Explore({setSelectedRoute,journeySearch,onExactQuote}) {
   const [q,setQ]=useState("");const [filter,setFilter]=useState("all");
   const rows=ROUTES.filter(r=>(filter==="all"||r.type===(filter==="recurring"?"Monthly":"Once-off"))&&(r.start+" "+r.end+" "+r.period).toLowerCase().includes(q.toLowerCase()));
   return <>
     <Heading eyebrow="TRUSTARC MARKETPLACE" title="Explore transport" description="Search recurring routes, private transfers and emerging transport opportunities."/>
+    {journeySearch&&<div className="ta2-exact-journey-card"><div className="ta2-exact-journey-copy"><p className="ta2-eyebrow">YOUR EXACT REQUEST</p><h3>Quote the journey you actually searched for</h3><p>Your original pickup and destination are preserved. We can prepare a precise quotation enquiry without requiring you to select an unrelated service.</p></div><button className="ta2-btn" onClick={onExactQuote}>Quote this exact trip <ArrowRight size={17}/></button></div>}
+    <div className="ta2-quote-discovery"><button className="ta2-btn ta2-btn-outline" onClick={onExactQuote}>Request a custom journey quote <ArrowRight size={17}/></button></div>
     {journeySearch&&<div className="ta2-search-summary"><div><MapPin size={18}/><span><strong>Pickup</strong>{journeySearch.origin.address}</span></div><ArrowRight size={17}/><div><Navigation size={18}/><span><strong>Destination</strong>{journeySearch.destination.address}</span></div><small>Geocoded locations selected · Live route matching pending</small></div>}
     <div className="ta2-searchbar"><Search size={19}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search a route or destination" aria-label="Search routes"/></div>
     <div className="ta2-filters">{[["all","All journeys"],["recurring","Commuter routes"],["once","Once-off"]].map(([value,label])=><button className={filter===value?"active":""} onClick={()=>setFilter(value)} key={value}>{label}</button>)}</div>
+    <div className="ta2-heading"><div><p className="ta2-eyebrow">ALTERNATIVES, NOT VERIFIED MATCHES</p><h2>Other TrustArc services</h2><p>These are examples of existing offerings; they are not yet ranked by your exact pins or guaranteed available.</p></div></div>
     <div className="ta2-route-grid">{rows.map(r=><RouteCard key={r.id} item={r} onSelect={setSelectedRoute}/>)}</div>
     {!rows.length&&<UnderConstruction title="No example matches" description="Try another destination. In the live marketplace, you will be able to request a route and gather interest."/>}
-    <Panel className="ta2-inline-cta"><div><h3>Can't find the right route?</h3><p>You'll be able to create a route request so TrustArc can match demand with available fleet capacity.</p></div><Pill>Demand matching · Next build</Pill></Panel>
+    <Panel className="ta2-inline-cta"><div><h3>Can't find the right route?</h3><p>Prepare a request for your precise journey. The live matching engine can later use it to identify route and fleet-owner opportunities.</p></div><button onClick={onExactQuote} className="ta2-btn">Quote my own route <ArrowRight size={16}/></button></Panel>
   </>;
 }
 function JourneyScreen({role}) {return <>
@@ -149,15 +154,24 @@ function WalletScreen({role}) {return <>
   <div className="ta2-privacy-note"><ShieldCheck size={17}/> Prepaid funds and refunds will only become available after payment and regulatory controls are approved.</div>
 </>}
 function FleetScreen() {
-  const [drafts,setDrafts]=useState([]);const [show,setShow]=useState(false);const [label,setLabel]=useState("");const [capacity,setCapacity]=useState("8");const [provider,setProvider]=useState("cartrack");
-  function add(e){e.preventDefault();const n=Number(capacity);if(!label.trim()||!Number.isInteger(n)||n<1||n>80)return;setDrafts(ds=>[...ds,{id:ds.length+1,label:label.trim(),capacity:n,provider}]);setLabel("");setShow(false);}
+  const [drafts,setDrafts]=useState([]);
+  const [show,setShow]=useState(false);
+  const [vehicle,setVehicle]=useState({make:"",model:"",year:new Date().getFullYear(),seats:8,provider:"not_selected"});
+  const [error,setError]=useState("");
+  function add(e){
+    e.preventDefault();
+    if(!vehicle.make.trim()||!vehicle.model.trim()||!Number.isInteger(vehicle.seats)||vehicle.seats<1||vehicle.seats>80||!Number.isInteger(vehicle.year)||vehicle.year<1980||vehicle.year>new Date().getFullYear()+1){setError("Enter make, model, valid year and actual passenger seats.");return;}
+    setDrafts(ds=>[...ds,{id:ds.length+1,...vehicle,label:vehicle.make+" "+vehicle.model,status:"Local draft · Unverified"}]);
+    setError("");setShow(false);
+  }
   return <>
-    <Heading eyebrow="FLEET OPERATIONS" title="My fleet" description="Register vehicles once, then link them to eligible schedules, routes and tracking providers." action={<Button onClick={()=>setShow(s=>!s)}>{show?<X size={16}/>:<Plus size={16}/>} {show?"Close":"Add vehicle"}</Button>}/>
-    {show&&<Panel><h3>Create demo fleet record</h3><form className="ta2-draft-form" onSubmit={add}><label>Vehicle description<input required placeholder="e.g. 14-seat shuttle" value={label} onChange={e=>setLabel(e.target.value)}/></label><label>Passenger seats<input min="1" max="80" type="number" required value={capacity} onChange={e=>setCapacity(e.target.value)}/></label><label>Tracking provider<select value={provider} onChange={e=>setProvider(e.target.value)}>{TRACKING_PROVIDERS.map(p=><option key={p} value={p}>{p.replaceAll("_"," ")}</option>)}</select></label><Button type="submit">Add demo draft <Check size={16}/></Button></form><small className="ta2-disclaimer">Drafts stay on this screen only and do not alter the database.</small></Panel>}
-    <div className="ta2-fleet-list">{[...drafts.map(d=>({label:d.label,capacity:d.capacity,provider:d.provider,status:"Draft preview"})),{label:"Vehicle registry",capacity:"—",provider:"Cartrack / Netstar",status:"Awaiting secure API"}].map((v,i)=><Panel className="ta2-fleet-item" key={i}><span className="ta2-fleet-icon"><BusFront size={23}/></span><div><strong>{v.label}</strong><small>{v.capacity} passenger seats · {v.provider}</small></div><Pill>{v.status}</Pill></Panel>)}</div>
-    <div className="ta2-privacy-note"><Info size={17}/> Every partner vehicle will have a single TrustArc identity, irrespective of its tracking provider.</div>
+    <Heading eyebrow="FLEET OPERATIONS" title="My fleet" description="Search common vehicle makes and models, or enter a South African model manually. Verified registration and compliance are separate steps." action={<Button onClick={()=>setShow(s=>!s)}>{show?<X size={16}/>:<Plus size={16}/>} {show?"Close":"Add vehicle"}</Button>}/>
+    {show&&<Panel><h3>New vehicle draft</h3><form onSubmit={add}><VehicleCataloguePicker onChange={setVehicle}/>{error&&<p className="ta2-search-error" role="alert">{error}</p>}<Button type="submit">Add vehicle draft <Check size={16}/></Button></form><small className="ta2-disclaimer">Only a local preview record. No registration, insurance or GPS account is verified or saved to a live database.</small></Panel>}
+    <div className="ta2-fleet-list">{[...drafts,{label:"Your verified fleet",seats:"—",provider:"Cartrack / Netstar",status:"Secure registry pending"}].map((v,i)=><Panel className="ta2-fleet-item" key={i}><span className="ta2-fleet-icon"><BusFront size={23}/></span><div><strong>{v.label}</strong><small>{v.year||""} · {v.seats} passenger seats · {v.provider}</small></div><Pill>{v.status}</Pill></Panel>)}</div>
+    <div className="ta2-privacy-note"><Info size={17}/> The catalogue helps fill make/model information. TrustArc approves actual usable capacity only after registration, insurance, roadworthy and relevant service compliance are checked.</div>
   </>;
 }
+
 function RouteOperations() {
   const [open,setOpen]=useState(false);const [origin,setOrigin]=useState("");const [end,setEnd]=useState("");const [submitted,setSubmitted]=useState([]);
   function submit(e){e.preventDefault();if(!origin.trim()||!end.trim())return;setSubmitted(x=>[{origin,end},...x]);setOrigin("");setEnd("");setOpen(false);}
@@ -202,6 +216,7 @@ export default function TrustArcApp() {
   const [tab,setTab]=useState("home");
   const [selectedRoute,setSelectedRoute]=useState(null);
   const [journeySearch,setJourneySearch]=useState(null);
+  const [quoteRequest,setQuoteRequest]=useState(null);
   const [installVisible,setInstallVisible]=useState(false);
   const [installEvent,setInstallEvent]=useState(null);
   const [roleOpen,setRoleOpen]=useState(false);
@@ -232,7 +247,8 @@ export default function TrustArcApp() {
       {tab==="home"&&role==="operations"&&<OperationsHome go={go}/>}
       {tab==="home"&&role==="fleet"&&<FleetHome go={go}/>}
       {tab==="home"&&role==="driver"&&<DriverHome go={go}/>}
-      {tab==="explore"&&<Explore setSelectedRoute={setSelectedRoute} journeySearch={journeySearch}/>} 
+      {tab==="explore"&&<Explore setSelectedRoute={setSelectedRoute} journeySearch={journeySearch} onExactQuote={()=>{setQuoteRequest(journeySearch);go("quote")}}/>}
+      {tab==="quote"&&role==="customer"&&<ExactQuoteRequest key={quoteRequest?.origin?.address||"new"} initialRequest={quoteRequest} onBack={()=>go("explore")}/>} 
       {tab==="journeys"&&<JourneyScreen role={role}/>}
       {tab==="wallet"&&<WalletScreen role={role}/>}
       {tab==="routes"&&<RouteOperations/>}
@@ -244,7 +260,7 @@ export default function TrustArcApp() {
       <footer className="ta2-footer"><strong>TRUSTARC.</strong><span>Seamless journeys. Everywhere.</span><small>BUILD 0.2 · PWA EXPERIENCE PREVIEW</small></footer>
     </main>
     <nav className="ta2-bottom-nav" aria-label="Primary app navigation"><div className="ta2-tab-row">{tabs.map(({id,label,icon:Icon})=><button key={id} className={"ta2-tab "+(tab===id?"active":"")} onClick={()=>go(id)} aria-current={tab===id?"page":undefined}><span className="ta2-tab-icon"><Icon size={21} strokeWidth={tab===id?2.5:1.8}/></span><span>{label}</span></button>)}</div></nav>
-    {selectedRoute&&<RouteDetail key={selectedRoute.id} route={selectedRoute} close={()=>setSelectedRoute(null)}/>}
+    {selectedRoute&&<RouteDetail key={selectedRoute.id} route={selectedRoute} close={()=>setSelectedRoute(null)} onQuote={()=>{setSelectedRoute(null);setQuoteRequest(journeySearch);go("quote")}}/>}
     {installVisible&&<InstallInfo close={()=>setInstallVisible(false)} installPrompt={installEvent?install:null}/>}
   </div>;
 }

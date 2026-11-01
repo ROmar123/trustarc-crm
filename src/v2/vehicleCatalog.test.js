@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {combineModels,LOCAL_MODELS} from "./vehicleCatalog.js";
+test("keeps SA-local models when US reference omits them",()=>{assert.ok(combineModels("Renault",[]).includes("Triber"));assert.ok(combineModels("Suzuki",[]).includes("Ertiga"));assert.ok(combineModels("Volkswagen",[]).includes("Kombi"))});
+test("deduplicates imported models, keeps manual overrides",()=>{assert.deepEqual(combineModels("Renault",["TRIBER","Zoe"]).filter(x=>x.toLowerCase()==="triber"),["TRIBER"]);assert.ok(combineModels("Renault",["Zoe"]).includes("Zoe"))});
