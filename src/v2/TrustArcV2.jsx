@@ -35,8 +35,8 @@ const ROLES = [
   { value: "fleetowner", label: "Fleet owner" },
 ];
 function Badge({ children, tone = "neutral" }) { return <span className={"v2-badge v2-badge-"+tone}>{children}</span>; }
-function Action({ children, onClick, secondary = false, disabled = false }) {
-  return <button type="button" disabled={disabled} onClick={onClick} className={"v2-button "+(secondary?"v2-button-secondary":"")}>{children}</button>;
+function Action({ children, onClick, secondary = false, disabled = false, submit = false }) {
+  return <button type={submit ? "submit" : "button"} disabled={disabled} onClick={onClick} className={"v2-button "+(secondary?"v2-button-secondary":"")}>{children}</button>;
 }
 function SectionTitle({ eyebrow, title, subtitle, children }) {
   return <div className="v2-section-heading"><div><p className="v2-eyebrow">{eyebrow}</p><h2>{title}</h2><p className="v2-subtitle">{subtitle}</p></div>{children}</div>;
@@ -112,7 +112,7 @@ function Fleet({ setView }) {
       <Action onClick={()=>setOpen(x=>!x)}>{open?<X size={16}/>:<Plus size={16}/>} {open?"Close":"Add demo vehicle"}</Action>
     </SectionTitle>
     <div className="v2-notice"><ShieldCheck size={19}/><span>Sandbox data only. Drafts are local to this page and are not saved, published or linked to tracking providers.</span></div>
-    {open&&<Panel><h3>Create a vehicle draft</h3><form className="v2-form" onSubmit={addVehicle}><label>Vehicle label<input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Shuttle 01" required/></label><label>Passenger seat capacity<input type="number" min="1" max="80" value={seats} onChange={e=>setSeats(e.target.value)} required/></label><label>Tracking provider<select value={provider} onChange={e=>setProvider(e.target.value)}>{TRACKING_PROVIDERS.map(s=><option value={s} key={s}>{s.replaceAll("_"," ")}</option>)}</select></label><Action>Save draft <Check size={16}/></Action></form></Panel>}
+    {open&&<Panel><h3>Create a vehicle draft</h3><form className="v2-form" onSubmit={addVehicle}><label>Vehicle label<input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Shuttle 01" required/></label><label>Passenger seat capacity<input type="number" min="1" max="80" value={seats} onChange={e=>setSeats(e.target.value)} required/></label><label>Tracking provider<select value={provider} onChange={e=>setProvider(e.target.value)}>{TRACKING_PROVIDERS.map(s=><option value={s} key={s}>{s.replaceAll("_"," ")}</option>)}</select></label><Action submit>Save draft <Check size={16}/></Action></form></Panel>}
     <Panel className="v2-search-panel"><div className="v2-search"><Search size={19}/><input placeholder="Filter vehicles or provider..." aria-label="Filter vehicles" value={query} onChange={e=>setQuery(e.target.value)}/></div><Badge>{filtered.length} demo records</Badge></Panel>
     <Panel className="v2-table-panel"><div className="v2-table-scroll"><table><thead><tr><th>Vehicle</th><th>Seats</th><th>Tracking</th><th>Location health</th><th>Status</th></tr></thead><tbody>{filtered.map(v=><tr key={v.id}><td><strong>{v.name}</strong><small>{v.id}</small></td><td>{v.seats}</td><td><Badge tone="light">{v.provider}</Badge></td><td>Not available</td><td><Badge>{v.status}</Badge></td></tr>)}</tbody></table></div>{filtered.length===0&&<p className="v2-pad">No matching demo vehicles.</p>}</Panel>
     <Panel className="v2-callout"><div><h3>Next: provider adapters</h3><p>Each verified tracking account will map a provider-specific device ID to a single TrustArc vehicle identity through a secure backend.</p></div><Action onClick={()=>setView("tracking")}>Tracking readiness <ArrowRight size={16}/></Action></Panel>
