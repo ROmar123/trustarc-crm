@@ -11,6 +11,7 @@ import AppAddressSearch from "./AppAddressSearch.jsx";
 import PeopleOnboarding from "./PeopleOnboarding.jsx";
 import ExactQuoteRequest from "./ExactQuoteRequest.jsx";
 import VehicleCataloguePicker from "./VehicleCataloguePicker.jsx";
+import {ConnectionMap,BuildPulse,OperationsInfographic,TrackingReadiness} from "./VisualInsights.jsx";
 import { TRACKING_PROVIDERS } from "./tracking.js";
 import "./TrustArcApp.css";
 
@@ -120,6 +121,7 @@ function CustomerHome({go,setSelectedRoute,onFind}) {
       <div className="ta2-frequency">{[["recurring","Everyday commute"],["once","Once-off"],["flexible","Flexible"]].map(([id,label])=><button key={id} className={frequency===id?"chosen":""} onClick={()=>setFrequency(id)}>{label}</button>)}</div>
       <Button onClick={find}>Find my transport <ArrowRight size={18}/></Button>{searchMessage&&<p className="ta2-search-error" role="status">{searchMessage}</p>}<small>Location pins use Mapbox. Results are illustrative until live route matching is connected.</small>
     </Panel>
+    <ConnectionMap compact caption="Illustrative TrustArc route network · not GPS data or a live service"/>
     <Heading eyebrow="THE MARKETPLACE" title="Explore your next journey" description="Discover routes and transport options available through TrustArc." action={<button className="ta2-text-link" onClick={()=>go("explore")}>See all <ArrowRight size={16}/></button>}/>
     <div className="ta2-route-grid">{ROUTES.slice(0,2).map(item=><RouteCard key={item.id} item={item} onSelect={setSelectedRoute}/>)}</div>
     <Heading eyebrow="MADE FOR EVERY JOURNEY" title="Everything in one place"/>
@@ -137,6 +139,7 @@ function Explore({setSelectedRoute,journeySearch,onExactQuote}) {
     <div className="ta2-searchbar"><Search size={19}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search a route or destination" aria-label="Search routes"/></div>
     <div className="ta2-filters">{[["all","All journeys"],["recurring","Commuter routes"],["once","Once-off"]].map(([value,label])=><button className={filter===value?"active":""} onClick={()=>setFilter(value)} key={value}>{label}</button>)}</div>
     <div className="ta2-heading"><div><p className="ta2-eyebrow">ALTERNATIVES, NOT VERIFIED MATCHES</p><h2>Other TrustArc services</h2><p>These are examples of existing offerings; they are not yet ranked by your exact pins or guaranteed available.</p></div></div>
+    <ConnectionMap compact caption="Conceptual service network · alternatives are not confirmed journey matches"/>
     <div className="ta2-route-grid">{rows.map(r=><RouteCard key={r.id} item={r} onSelect={setSelectedRoute}/>)}</div>
     {!rows.length&&<UnderConstruction title="No example matches" description="Try another destination. In the live marketplace, you will be able to request a route and gather interest."/>}
     <Panel className="ta2-inline-cta"><div><h3>Can't find the right route?</h3><p>Prepare a request for your precise journey. The live matching engine can later use it to identify route and fleet-owner opportunities.</p></div><button onClick={onExactQuote} className="ta2-btn">Quote my own route <ArrowRight size={16}/></button></Panel>
@@ -185,6 +188,7 @@ function RouteOperations() {
 function Tracking() {return <>
   <Heading eyebrow="REAL-TIME OPERATIONS" title="Live tracking" description="Cartrack, Netstar and approved partner vehicles feed a single secure vehicle-position service."/>
   <div className="ta2-map-placeholder"><span className="ta2-map-mesh"/><div className="ta2-map-message"><Radio size={28}/><h3>Live map not connected</h3><p>We'll display authorised vehicles here after the fleet registry and telematics integrations are verified.</p><Pill>GPS feed · Not connected</Pill></div></div>
+  <TrackingReadiness/>
   <div className="ta2-info-grid"><Panel><Radio size={22}/><h3>Cartrack & Netstar</h3><p>Both providers will be normalised to one vehicle position format.</p></Panel><Panel><Clock3 size={22}/><h3>Reliable ETA</h3><p>Predicted arrival from the assigned vehicle, approved stops, traffic and trip sequence.</p></Panel></div>
 </>}
 function Profile({role,go,openInstall}) {
@@ -206,6 +210,7 @@ function OperationsHome({go}){return <>
   <div className="ta2-hero ta2-hero-operations"><div className="ta2-hero-copy"><span className="ta2-hero-label"><i/> TRUSTARC CONTROL</span><h1>The whole operation.<br/><em>One clear view.</em></h1><p>Fleet, routes, journeys and customer demand—managed together, not across disconnected screens.</p><Button onClick={()=>go("tracking")}>Open live operations <ArrowRight size={17}/></Button></div><div className="ta2-hero-decoration"><div className="ta2-glow"/><div className="ta2-hero-orbit"><TrustArcLogo/></div></div></div>
   <Heading eyebrow="OPERATIONAL PULSE" title="At a glance" description="Metrics activate after secure integration with the verified live database."/>
   <div className="ta2-metric-grid"><Metric label="Active trips" icon={Navigation} foot="Trip feed pending"/><Metric label="Fleet connected" icon={BusFront} foot="Provider access pending"/><Metric label="Requests" icon={Users} foot="CRM connection pending"/><Metric label="Outstanding" icon={Wallet} foot="Finance link pending"/></div>
+  <div className="ta2-dash-viz-grid"><BuildPulse/><OperationsInfographic/></div>
   <Heading eyebrow="YOUR WORKSPACE" title="Run TrustArc"/>
   <div className="ta2-action-grid">{[{title:"Route operations",description:"Create and manage services",icon:Route,tab:"routes"},{title:"Vehicle registry",description:"Fleet supply and tracking",icon:BusFront,tab:"vehicles"},{title:"People & onboarding",description:"Add customers, drivers and fleet owners",icon:Users,tab:"people"},{title:"Live command",description:"Locations, ETAs and alerts",icon:Radio,tab:"tracking"}].map(x=><button className="ta2-action-card" key={x.tab} onClick={()=>go(x.tab)}><x.icon size={22}/><strong>{x.title}</strong><span>{x.description}</span><ArrowUpRight className="ta2-action-arrow" size={17}/></button>)}</div>
 </>}
