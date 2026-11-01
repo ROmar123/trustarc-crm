@@ -1,0 +1,23 @@
+.ta2-status-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:20px 0;}
+.ta2-status-summary>div{display:flex;align-items:center;gap:14px;border:1px solid #e4d7e9;background:#fffefa;border-radius:17px;padding:19px;}
+.ta2-status-circle{width:37px;height:37px;display:grid;place-items:center;border-radius:11px;background:#e9d9f3;color:#754995;flex:none;}
+.ta2-status-circle.pending{background:#eee9ed;color:#9b899e;}
+.ta2-status-summary strong{font:500 30px Outfit,sans-serif;color:#45304d;}
+.ta2-status-summary small{font-size:10px;color:#918297;line-height:1.5;}
+.ta2-status-section{margin:30px 0;}
+.ta2-status-section h3{font:500 23px Outfit,sans-serif;display:flex;align-items:center;gap:9px;letter-spacing:-.03em;color:#3a2944;}
+.ta2-status-section h3 svg{color:#8151a3;}
+.ta2-status-rows{background:#fffdfa;border:1px solid #e7dce8;border-radius:18px;overflow:hidden;}
+.ta2-status-row{display:flex;align-items:flex-start;gap:13px;padding:18px;border-bottom:1px solid #eee6f0;}
+.ta2-status-row:last-child{border-bottom:0;}
+.ta2-status-row>svg{flex:none;color:#865bad;}
+.ta2-status-row>div{flex:1;min-width:0;}
+.ta2-status-row strong{display:block;font-size:12px;color:#36263f;}
+.ta2-status-row p{font-size:11px;line-height:1.7;color:#82758b;margin:5px 0 0;}
+.ta2-status-chip{font-size:9px;white-space:nowrap;background:#eddef4;color:#714395;border-radius:999px;padding:7px 9px;}
+.ta2-status-chip.pending{background:#eeebee;color:#8e8293;}
+.ta2-next-release{border-radius:19px;background:linear-gradient(115deg,#6e408c,#8b59a7);color:#fff;padding:23px;margin:25px 0;}
+.ta2-next-release>span{font:500 9px "JetBrains Mono";letter-spacing:.12em;color:#e2cfe8;}
+.ta2-next-release h3{font:500 25px Outfit,sans-serif;letter-spacing:-.04em;margin:10px 0;}
+.ta2-next-release p{font-size:11px;line-height:1.8;color:#e6d9ec;margin:0;}
+@media(max-width:540px){.ta2-status-summary{grid-template-columns:1fr;}.ta2-status-summary>div{padding:15px;}.ta2-status-row{gap:9px;padding:14px;}.ta2-status-chip{font-size:8px;padding:6px;}}
