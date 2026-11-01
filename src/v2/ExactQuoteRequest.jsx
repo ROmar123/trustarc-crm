@@ -2,6 +2,7 @@ import {useMemo,useState} from "react";
 import {ArrowLeft, ArrowRight, CalendarDays, Check, Clipboard, Mail, MapPin, Navigation, ShieldCheck, Users, Clock3, Info} from "lucide-react";
 import AppAddressSearch from "./AppAddressSearch.jsx";
 import {DAYS,validateQuote,quoteSummary} from "./quoteRules.js";
+import {JourneyProgress,ConnectionMap} from "./VisualInsights.jsx";
 
 const today=new Date().toLocaleDateString("en-CA");
 export default function ExactQuoteRequest({initialRequest,onBack}){
@@ -30,6 +31,8 @@ export default function ExactQuoteRequest({initialRequest,onBack}){
   return <div className="ta2-exact-quote">
     <button className="ta2-quote-back" type="button" onClick={onBack}><ArrowLeft size={18}/> Back to search results</button>
     <div className="ta2-heading"><div><p className="ta2-eyebrow">YOUR EXACT JOURNEY</p><h2>Request a tailored quote.</h2><p>Your original journey stays intact. Suggested routes are alternatives, not a replacement for what you searched for.</p></div></div>
+    <JourneyProgress active={1}/>
+    <ConnectionMap compact caption="Illustrative route network · the exact pickup and destination above remain unchanged"/>
     <section className="ta2-quote-explainer"><div><MapPin size={21}/><strong>Exact pickup and destination</strong><span>Never replaced by an approximate route</span></div><div><CalendarDays size={21}/><strong>Your travel schedule</strong><span>Dates, times, passengers and return leg</span></div><div><ShieldCheck size={21}/><strong>Commercial review</strong><span>No invented fares or seat guarantees</span></div></section>
     <form className="ta2-panel ta2-quote-form" onSubmit={prepare}>
       <h3>1. Journey locations</h3>
