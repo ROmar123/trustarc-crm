@@ -365,3 +365,67 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
  .ta2-quote-actions .ta2-btn{width:100%;}
  .ta2-quote-discovery .ta2-btn{width:100%;}
 }
+
+
+/* S0.4: Mobile layout hardening — keep native date/time pickers inside journey cards */
+.ta2-app,.ta2-main,.ta2-exact-quote,.ta2-quote-form,.ta2-quote-form>.ta2-quote-fields,
+.ta2-quote-two,.ta2-quote-contact,.ta2-find-panel,.ta2-input-stack,
+.ta2-searchbar,.ta2-vehicle-lookup,.ta2-viz-panel {
+  min-width:0;
+  max-width:100%;
+}
+.ta2-quote-form,.ta2-quote-outcome{overflow-x:clip;}
+.ta2-quote-two,.ta2-quote-fields,.ta2-quote-contact{grid-template-columns:repeat(2,minmax(0,1fr));}
+.ta2-quote-two>*,.ta2-quote-fields>*,.ta2-quote-contact>*,
+.ta2-vehicle-lookup .ta2-quote-fields>*,
+.ta2-draft-form>*{min-width:0;min-inline-size:0;max-width:100%;}
+.ta2-quote-fields label,.ta2-quote-contact label,.ta2-quote-two label,
+.ta2-quote-notes,.ta2-vehicle-lookup label{min-width:0;min-inline-size:0;max-width:100%;overflow-wrap:anywhere;}
+.ta2-quote-fields input,.ta2-quote-contact input,.ta2-quote-contact select,
+.ta2-quote-fields select,.ta2-quote-notes textarea,
+.ta2-vehicle-lookup input,.ta2-vehicle-lookup select,
+.ta2-draft-form input,.ta2-draft-form select,
+.ta2-address-control input{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  min-inline-size:0;
+  box-sizing:border-box;
+  color-scheme:light;
+}
+.ta2-quote-fields input[type="date"],.ta2-quote-fields input[type="time"]{
+  -webkit-appearance:none;appearance:none;
+  padding-left:10px;padding-right:8px;
+  overflow:hidden;
+  font-variant-numeric:tabular-nums;
+}
+.ta2-quote-fields input[type="date"]::-webkit-date-and-time-value,
+.ta2-quote-fields input[type="time"]::-webkit-date-and-time-value{
+  text-align:left;
+  min-width:0;
+  width:100%;
+}
+.ta2-quote-fields input[type="date"]::-webkit-calendar-picker-indicator,
+.ta2-quote-fields input[type="time"]::-webkit-calendar-picker-indicator{
+  flex-shrink:0;
+  margin:0;
+  opacity:.72;
+}
+.ta2-address-results{max-width:min(100%,calc(100vw - 32px));min-width:0;box-sizing:border-box;}
+.ta2-dash-viz-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch;}
+.ta2-dash-viz-grid>.ta2-viz-panel{margin-top:17px;}
+@media(max-width:960px){
+ .ta2-dash-viz-grid{grid-template-columns:1fr;}
+}
+@media(max-width:780px){
+ .ta2-quote-two,.ta2-quote-fields,.ta2-quote-contact,
+ .ta2-vehicle-lookup .ta2-quote-fields{grid-template-columns:minmax(0,1fr);}
+ .ta2-quote-form{padding:17px 15px;}
+ .ta2-quote-fields input[type="date"],.ta2-quote-fields input[type="time"]{width:100%;max-width:100%;}
+}
+@media(max-width:760px){
+ .ta2-quote-fields input,.ta2-quote-contact input,.ta2-quote-fields select,
+ .ta2-quote-contact select,.ta2-vehicle-lookup input,.ta2-vehicle-lookup select,
+ .ta2-address-control input{font-size:16px;}
+}
