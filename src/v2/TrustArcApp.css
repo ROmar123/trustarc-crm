@@ -245,3 +245,65 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   .ta2-detail-footer{align-items:stretch;flex-direction:column;}
 }
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important;scroll-behavior:auto!important;}}
+
+
+/* Mapbox-selected coordinates: same address discovery model as trustarc.co.za */
+.ta2-geocode-stack{overflow:visible;position:relative;align-items:start;}
+.ta2-address{position:relative;min-width:0;width:100%;}
+.ta2-address-label{display:block;font-size:10px;font-weight:700;color:#776982;padding:10px 0 0;}
+.ta2-address-control{display:flex;align-items:center;gap:8px;color:#8654a4;min-width:0;position:relative;}
+.ta2-address-control input{border:0;min-height:42px;background:transparent;padding:9px 2px;flex:1;width:100%;outline:0;font-size:12px;color:#382b3d;min-width:0;text-overflow:ellipsis;}
+.ta2-address-control input::placeholder{color:#9a91a1;}
+.ta2-address-control.is-verified{color:#34745b;}
+.ta2-address-results{position:absolute;z-index:39;top:calc(100% + 4px);left:0;right:0;min-width:min(320px,85vw);background:#fffefa;border:1px solid #decde9;border-radius:14px;box-shadow:0 22px 55px #33234026;max-height:310px;overflow:auto;}
+.ta2-address-results button{border:0;border-bottom:1px solid #eee7f0;background:transparent;display:flex;align-items:flex-start;gap:10px;padding:13px 12px;width:100%;font-size:11px;line-height:1.5;text-align:left;color:#433b49;}
+.ta2-address-results button:hover,.ta2-address-results button.selected{background:#f3e9f7;}
+.ta2-address-results button svg{flex:none;color:#8557a1;}
+.ta2-address-results p{padding:12px 14px;font-size:11px;color:#7c7182;margin:0;}
+.ta2-address-results small{display:block;padding:8px 13px;background:#f8f4f9;color:#98879d;font-size:9px;}
+.ta2-address-selected,.ta2-address-warning{display:flex;gap:4px;align-items:center;font-size:10px;line-height:1.5;color:#4b775f;margin:0 0 8px;}
+.ta2-address-selected a{display:inline-flex;align-items:center;gap:4px;color:#6f468d;text-decoration:underline;}
+.ta2-address-warning{color:#986a42;}
+.ta2-address-spin{animation:ta2-spin .8s linear infinite;}
+@keyframes ta2-spin{to{transform:rotate(360deg)}}
+.ta2-geocode-stack .ta2-input-divider{margin-top:25px;}
+.ta2-search-error{margin:10px 0 2px!important;color:#9c3e4d!important;font-size:11px!important;}
+.ta2-search-summary{border:1px solid #d9c4e4;border-radius:17px;background:#f3ecf6;padding:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:17px;}
+.ta2-search-summary>div{display:flex;align-items:center;gap:8px;max-width:43%;font-size:11px;color:#5a4962;min-width:0;}
+.ta2-search-summary>div span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ta2-search-summary>div strong{display:block;color:#6f4791;font-size:10px;margin-bottom:3px;}
+.ta2-search-summary>div svg{color:#8254a0;flex:none;}
+.ta2-search-summary>small{display:block;width:100%;color:#907d99;font-size:10px;}
+.ta2-location-proposal{border-radius:14px;border:1px solid #e2d3e6;padding:13px 16px;background:white;margin-top:10px;}
+.ta2-location-proposal>small{display:block;color:#917d98;font-size:10px;margin-top:7px;}
+.ta2-onboarding-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0;}
+.ta2-onboard-type{display:flex;flex-direction:column;align-items:flex-start;gap:12px;min-height:155px;border-radius:18px;background:#fffefa;border:1px solid #e5dce8;text-align:left;padding:19px;color:#8252a1;}
+.ta2-onboard-type.chosen{border-color:#bf9acf;background:#faf4fc;}
+.ta2-onboard-type strong{font:500 20px "Outfit";color:#392840;}
+.ta2-onboard-type small{color:#85778b;font-size:10px;line-height:1.6;}
+.ta2-onboard-type svg:last-child{margin-left:auto;}
+.ta2-onboard-form{margin:14px 0;}
+.ta2-onboard-form .ta2-sheet-head{margin:0 0 17px;}
+.ta2-onboard-form .ta2-sheet-head h3{margin:0;}
+.ta2-onboard-notes{grid-column:1/-1;}
+.ta2-stages{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:18px 0;}
+.ta2-stage{border:1px solid #e2d7e4;border-radius:12px;background:#fffdfb;padding:12px 9px;display:flex;flex-direction:column;gap:8px;}
+.ta2-stage span{font:500 10px "JetBrains Mono";color:#a28eb0;}
+.ta2-stage strong{font-size:10px;font-weight:600;}
+.ta2-person-row{display:flex;gap:12px;align-items:center;margin:8px 0;}
+.ta2-person-row>div:nth-child(2){flex:1;}
+.ta2-person-row strong{font-size:12px;display:block;}
+.ta2-person-row small{font-size:10px;color:#8e8293;display:block;margin-top:4px;}
+.ta2-person-row>button{border:0;background:transparent;color:#8d7f94;}
+@media (max-width:760px){
+  .ta2-onboarding-grid{grid-template-columns:1fr;}
+  .ta2-onboard-type{min-height:0;}
+  .ta2-stages{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .ta2-search-summary>div{max-width:100%;width:100%;}
+  .ta2-search-summary>svg{transform:rotate(90deg);}
+}
+@media (max-width:470px){
+  .ta2-geocode-stack .ta2-input-divider{margin-top:0;}
+  .ta2-address-label{padding-top:7px;}
+  .ta2-search-summary{gap:7px;}
+}
