@@ -72,3 +72,15 @@ A slice is done only when:
 3. Implement default-deny authorisation and RLS in a safe staging database first; cross-role access tests are mandatory.
 4. Then connect verified read-only vehicles and trips, replacing example cards and empty state indicators, preserving POPIA isolation.
 5. Gate production cutover behind reconciliation, backup, rollback and explicit acceptance.
+
+
+## S0.4 — Mobile quote layout, visual analytics and functional transparency
+- **Scope:** Only `ROmar123/trustarc-crm` on development branch. NEVER edit or release `ROmar123/Trustarc-the-real-` without explicit separate authorisation.
+- **Bug fix:** Date/time native inputs on the exact-quote form constrain inline width, shrink safely within CSS grids, preserve native iOS picker, and stack fields under 780px. Mapbox address dropdown stays unclipped.
+- **Visuals:** Original lightweight SVG route network infographic, journey stages, dashboard readiness doughnut and architecture data flow, GPS-provider connection illustration. No screenshots, external images or invented business KPIs.
+- **Truthful metrics:** Dashboard readiness counts only known preview module states. No fabricated vehicle counts, journey dates, bookings, occupancy, revenue or ETA.
+- **Transparency:** App has 'What works?' page explaining preview capabilities vs blocked backend features; shortcut in banner and profile. Include PWA installation constraints and POPIA caution.
+- **Working preview:** role tab navigation, address suggestions when Mapbox config works, selected geocoded pins, route example cards, exact quote drafting/validation and email-client handoff, free make/model suggestions with manual SA fallback, local drafts for people/fleet/route, manifest/install instructions.
+- **NOT live:** verified login/RLS, database-backed onboarding/quote storage, actual fleet registry, GPS feed/ETA, route-to-pin matching, confirmed seats, booking payments, subscriptions, wallet and dispatch.
+- **S1 next unchanged:** Verify the actual Supabase deployment/database; implement staff/customer authentication and scoped RLS in safe staging; backend quote submission with audit and access tests; then read-only fleet and actual ops metrics.
+- **Exit criteria:** CI Node tracking/quote/model tests and Vite build pass; preview deployment READY; visual acceptance on real iPhone/Android still needed; production website untouched.
