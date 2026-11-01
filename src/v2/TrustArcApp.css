@@ -374,7 +374,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   min-width:0;
   max-width:100%;
 }
-.ta2-quote-form,.ta2-quote-outcome{overflow-x:clip;}
+.ta2-quote-outcome{overflow-x:clip;}
 .ta2-quote-two,.ta2-quote-fields,.ta2-quote-contact{grid-template-columns:repeat(2,minmax(0,1fr));}
 .ta2-quote-two>*,.ta2-quote-fields>*,.ta2-quote-contact>*,
 .ta2-vehicle-lookup .ta2-quote-fields>*,
@@ -395,7 +395,6 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   color-scheme:light;
 }
 .ta2-quote-fields input[type="date"],.ta2-quote-fields input[type="time"]{
-  -webkit-appearance:none;appearance:none;
   padding-left:10px;padding-right:8px;
   overflow:hidden;
   font-variant-numeric:tabular-nums;
